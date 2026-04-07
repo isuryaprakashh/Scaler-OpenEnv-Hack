@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+*.log
+*.egg-info/
+dist/
+build/
+runner.py
+quick_test.py

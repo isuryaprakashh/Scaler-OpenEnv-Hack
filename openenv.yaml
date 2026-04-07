@@ -1,0 +1,98 @@
+name: sql-debugger-agent
+version: "1.0.0"
+description: >
+  SQL Database Debugger Agent evaluates AI agents on their ability to
+  debug broken queries, optimize database performance through indexing,
+  and refactor denormalized schemas. Uses in-memory SQLite with
+  deterministic programmatic graders.
+
+author: "SQLDebugger Team"
+tags:
+  - openenv
+  - sql
+  - database
+  - debugging
+  - optimization
+
+tasks:
+  - id: task1
+    name: Syntax Debugger
+    difficulty: easy
+    max_steps: 6
+    objective: Fix a broken SQL query (ANDD typo) to retrieve user data.
+
+  - id: task2
+    name: Performance Tuner
+    difficulty: medium
+    max_steps: 8
+    objective: Add a missing index on customer_id to optimize queries.
+
+  - id: task3
+    name: Schema Architect
+    difficulty: hard
+    max_steps: 15
+    objective: Normalize a denormalized table into projects and managers.
+
+observation_space:
+  type: object
+  properties:
+    result_set:
+      type: array
+      items: { type: object }
+      nullable: true
+    error_message:
+      type: string
+      nullable: true
+    schema_metadata:
+      type: array
+      items:
+        type: object
+        properties:
+          table_name: { type: string }
+          columns: { type: array, items: { type: string } }
+          row_count: { type: integer }
+    last_action_result:
+      type: string
+      nullable: true
+    task_description: { type: string }
+    broken_query:
+      type: string
+      nullable: true
+
+action_space:
+  type: object
+  properties:
+    action_type:
+      type: string
+      enum:
+        - execute_sql
+        - get_schema
+        - get_table_info
+        - submit
+    params:
+      type: object
+      description: >
+        Key-value parameters:
+        - execute_sql: { sql: str }
+        - get_table_info: { table: str }
+        - submit: { sql: str } (optional)
+
+reward_space:
+  type: object
+  properties:
+    value:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+    reason: { type: string }
+    partial_credits:
+      type: object
+      additionalProperties: { type: number }
+
+endpoints:
+  reset:  POST /reset
+  step:   POST /step
+  state:  GET  /state
+  tasks:  GET  /tasks
+  grade:  POST /grade
+  health: GET  /health
