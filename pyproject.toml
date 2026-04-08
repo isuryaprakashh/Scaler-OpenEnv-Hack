@@ -7,7 +7,7 @@ name = "sql-debugger-agent"
 version = "1.0.0"
 description = "A SQL Database Debugger OpenEnv environment"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi==0.109.0",
     "uvicorn==0.27.0",
@@ -21,4 +21,4 @@ dependencies = [
 ]
 
 [project.scripts]
-server = "server.app:start"
+server = "server.app:main"
