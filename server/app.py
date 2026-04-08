@@ -2,9 +2,9 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 
-from models import Action, StepResponse, Observation
-from logic import SQLEnv
-from tasks import TASKS
+from server.models import Action, StepResponse, Observation
+from server.logic import SQLEnv
+from server.tasks import TASKS
 
 app = FastAPI(title="SQL Database Debugger Agent", version="1.0.0")
 env = SQLEnv()
@@ -88,3 +88,12 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=7860)
+
+
+def start():
+    import uvicorn
+    import sys
+    port = 7860
+    if len(sys.argv) > 1 and sys.argv[1].isdigit():
+        port = int(sys.argv[1])
+    uvicorn.run("server.app:app", host="0.0.0.0", port=port)

@@ -1,10 +1,10 @@
 import sqlite3
 from typing import Any, Dict, List, Optional, Tuple
 
-from models import (
+from server.models import (
     Action, ActionType, Observation, Reward, StepResponse, TableSummary,
 )
-from tasks import TASKS
+from server.tasks import TASKS
 
 
 class SQLEnv:

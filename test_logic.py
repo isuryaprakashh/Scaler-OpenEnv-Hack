@@ -1,7 +1,7 @@
 """Local test — verifies all 3 tasks work end-to-end without any external API."""
 
-from logic import SQLEnv
-from models import Action, ActionType
+from server.logic import SQLEnv
+from server.models import Action, ActionType
 
 
 def test_easy():
