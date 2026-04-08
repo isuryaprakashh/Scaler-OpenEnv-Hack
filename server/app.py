@@ -70,7 +70,7 @@ async def grade():
         "task_id": env.current_task_id,
         "score": score,
         "reason": reason,
-        "resolved": score >= 1.0,
+        "resolved": score >= 0.99,
         "steps_used": env.step_count,
     }
 

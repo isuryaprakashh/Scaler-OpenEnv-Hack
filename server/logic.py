@@ -56,15 +56,15 @@ class SQLEnv:
         task = TASKS[self.current_task_id]
         score, reason = task.grade(self.conn)
 
-        # Task solved — keep full 1.0 score
-        if score >= 1.0:
-            score = 1.0
+        # Task solved — keep full 0.99 score
+        if score >= 0.99:
+            score = 0.99
             self.done = True
         elif self.step_count >= self.max_steps:
             self.done = True
 
         reward = Reward(
-            value=min(score, 1.0),
+            value=min(max(score, 0.01), 0.99),
             reason=reason,
             partial_credits={"progress": round(score, 3)},
         )
@@ -73,7 +73,7 @@ class SQLEnv:
             observation=self._build_obs(result_msg),
             reward=reward,
             done=self.done,
-            info={"step": self.step_count, "max_steps": self.max_steps, "resolved": score >= 1.0},
+            info={"step": self.step_count, "max_steps": self.max_steps, "resolved": score >= 0.99},
         )
 
     # ------------------------------------------------------------------ state
