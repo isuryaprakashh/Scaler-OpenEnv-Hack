@@ -21,7 +21,8 @@ async def root():
         "links": {
             "health": "/health",
             "tasks": "/tasks",
-            "state": "/state"
+            "state": "/state",
+            "docs": "/docs"
         }
     }
 

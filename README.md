@@ -56,6 +56,15 @@ The `projects` table contains redundant `manager_name` and `manager_email` colum
 | `get_table_info` | `{"table": "..."}` | Get column details and row count |
 | `submit` | `{"sql": "..."}` | Submit final fix (also executes) |
 
+---
+
+## 🖥 Interactive Frontend (Swagger UI)
+Because this environment is built on FastAPI, it includes a beautiful, fully interactive frontend test interface automatically!
+
+To visit the frontend, just append **`/docs`** to your Hugging Face Space URL. From there, you can view the complete API schema, read parameter details, and use the "Try it out" button to playfully act as an Agent and interact with the database tables manually from your web browser!
+
+---
+
 ## Observation Space
 
 | Field | Type | Description |
