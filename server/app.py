@@ -85,15 +85,14 @@ async def health():
     return {"status": "ok"}
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=7860)
-
-
-def start():
+def main():
     import uvicorn
     import sys
     port = 7860
     if len(sys.argv) > 1 and sys.argv[1].isdigit():
         port = int(sys.argv[1])
     uvicorn.run("server.app:app", host="0.0.0.0", port=port)
+
+
+if __name__ == "__main__":
+    main()
