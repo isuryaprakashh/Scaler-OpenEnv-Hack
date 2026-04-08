@@ -14,6 +14,18 @@ class ResetRequest(BaseModel):
     task_id: str = "task1"
 
 
+@app.get("/")
+async def root():
+    return {
+        "status": "Welcome to the SQL Debugger Agent Environment",
+        "links": {
+            "health": "/health",
+            "tasks": "/tasks",
+            "state": "/state"
+        }
+    }
+
+
 @app.post("/reset")
 async def reset(request: Optional[ResetRequest] = None):
     task_id = request.task_id if request else "task1"
