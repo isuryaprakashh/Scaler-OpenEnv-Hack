@@ -1,3 +1,14 @@
+---
+title: SQL Debugger Agent
+emoji: 🛠️
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+tags:
+  - openenv
+---
+
 # SQL Database Debugger Agent 🛠️💾
 
 An **OpenEnv-compliant** environment for training and evaluating AI agents on real-world SQL database tasks: debugging broken queries, optimizing performance, and refactoring schemas.
@@ -59,9 +70,8 @@ The `projects` table contains redundant `manager_name` and `manager_email` colum
 ## Reward Design
 
 - **0.0**: No progress toward the objective
-- **0.1–0.5**: Partial credit (e.g., created managers table but didn't migrate data)
+- **0.1–0.8**: Partial credit (e.g., created managers table but didn't migrate data)
 - **1.0**: Task fully solved
-- **Efficiency bonus**: Faster solutions receive higher final scores (up to 0.3 bonus for fewer steps)
 
 ---
 
@@ -91,7 +101,11 @@ python app.py
 # Set your HF token (or create a .env file)
 export HF_TOKEN=your_token_here
 
+# Run all 3 tasks
 python inference.py
+
+# Run a specific task
+SQL_ENV_TASK=task2 python inference.py
 ```
 
 ### Environment Variables
@@ -148,10 +162,11 @@ SQLDebuggerAgent/
 ├── models.py           # Typed Pydantic models
 ├── logic.py            # SQLEnv core (SQLite + grading)
 ├── tasks.py            # Task definitions & graders
-├── inference.py        # Baseline agent script
+├── inference.py        # Baseline agent script (runs all 3 tasks)
+├── test_logic.py       # Offline tests for all tasks
 ├── openenv.yaml        # OpenEnv metadata
 ├── Dockerfile          # Container for HF Spaces
 ├── requirements.txt    # Python dependencies
-├── .env                # Local env vars (not committed)
+├── .env.example        # Sample env vars
 └── README.md           # This file
 ```

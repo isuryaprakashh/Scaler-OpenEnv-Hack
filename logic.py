@@ -56,10 +56,9 @@ class SQLEnv:
         task = TASKS[self.current_task_id]
         score, reason = task.grade(self.conn)
 
-        # Step-efficiency bonus: reward faster solutions
+        # Task solved — keep full 1.0 score
         if score >= 1.0:
-            efficiency = max(0.0, 1.0 - 0.3 * (self.step_count / self.max_steps))
-            score = round(max(0.5, efficiency), 3)
+            score = 1.0
             self.done = True
         elif self.step_count >= self.max_steps:
             self.done = True

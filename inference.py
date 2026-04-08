@@ -7,8 +7,8 @@ Mandatory env vars (per hackathon spec):
     HF_TOKEN       API key
 
 Usage:
-    python inference.py                    # runs task1
-    SQL_ENV_TASK=task2 python inference.py  # runs task2
+    python inference.py                    # runs ALL 3 tasks
+    SQL_ENV_TASK=task2 python inference.py  # runs only task2
 """
 
 import json
@@ -26,11 +26,12 @@ load_dotenv()
 # ── Config ────────────────────────────────────────────────────────────
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("API_KEY", "")
-LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME", "sql-debugger-agent")
+HF_TOKEN = os.getenv("HF_TOKEN")
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 ENV_URL = os.getenv("ENV_URL", "http://localhost:7860")
 
-TASK_NAME = os.getenv("SQL_ENV_TASK", "task1")
+ALL_TASKS = ["task1", "task2", "task3"]
+SINGLE_TASK = os.getenv("SQL_ENV_TASK", "")  # empty → run all
 BENCHMARK = "sql-debugger-agent"
 MAX_STEPS = 10
 TEMPERATURE = 0.2
@@ -98,24 +99,19 @@ def parse_action(raw: str) -> Optional[dict]:
     return None
 
 
-# ── Main loop ─────────────────────────────────────────────────────────
-def main() -> None:
-    if not HF_TOKEN:
-        print("[ERROR] HF_TOKEN is not set. Export it or add to .env", file=sys.stderr)
-        sys.exit(1)
-
-    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-
+# ── Run one task ──────────────────────────────────────────────────────
+def run_task(client: OpenAI, task_id: str) -> float:
+    """Run a single task against the environment. Returns the final score."""
     rewards: List[float] = []
     steps_taken = 0
     success = False
     score = 0.0
 
-    log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
+    log_start(task=task_id, env=BENCHMARK, model=MODEL_NAME)
 
     try:
         # Reset
-        r = requests.post(f"{ENV_URL}/reset", json={"task_id": TASK_NAME}, timeout=30)
+        r = requests.post(f"{ENV_URL}/reset", json={"task_id": task_id}, timeout=30)
         r.raise_for_status()
         obs = r.json()
 
@@ -176,10 +172,39 @@ def main() -> None:
         success = score >= 0.5
 
     except Exception as exc:
-        print(f"[DEBUG] Error: {exc}", file=sys.stderr)
+        print(f"[DEBUG] Error in {task_id}: {exc}", file=sys.stderr)
 
     finally:
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+
+    return score
+
+
+# ── Main ──────────────────────────────────────────────────────────────
+def main() -> None:
+    if not HF_TOKEN:
+        print("[ERROR] HF_TOKEN is not set. Export it or add to .env", file=sys.stderr)
+        sys.exit(1)
+
+    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+
+    # Determine which tasks to run
+    tasks = [SINGLE_TASK] if SINGLE_TASK else ALL_TASKS
+
+    scores = {}
+    for task_id in tasks:
+        scores[task_id] = run_task(client, task_id)
+
+    # Summary
+    print("[DEBUG] " + "=" * 50, flush=True)
+    print("[DEBUG] BASELINE RESULTS SUMMARY", flush=True)
+    print("[DEBUG] " + "=" * 50, flush=True)
+    for tid, sc in scores.items():
+        status = "✓ PASS" if sc >= 0.5 else "✗ FAIL"
+        print(f"[DEBUG]   {tid}: score={sc:.2f}  {status}", flush=True)
+    avg = sum(scores.values()) / len(scores) if scores else 0.0
+    print(f"[DEBUG]   Average: {avg:.2f}", flush=True)
+    print("[DEBUG] " + "=" * 50, flush=True)
 
 
 if __name__ == "__main__":
