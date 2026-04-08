@@ -14,17 +14,11 @@ class ResetRequest(BaseModel):
     task_id: str = "task1"
 
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 async def root():
-    return {
-        "status": "Welcome to the SQL Debugger Agent Environment",
-        "links": {
-            "health": "/health",
-            "tasks": "/tasks",
-            "state": "/state",
-            "docs": "/docs"
-        }
-    }
+    return RedirectResponse(url="/docs")
 
 
 @app.post("/reset")
