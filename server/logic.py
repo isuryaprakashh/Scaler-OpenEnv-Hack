@@ -41,7 +41,7 @@ class SQLEnv:
         if self.done:
             return StepResponse(
                 observation=self._build_obs("Episode already finished."),
-                reward=Reward(value=0.01, reason="Episode finished"),
+                reward=Reward(value=0.05, reason="Episode finished"),
                 done=True,
                 info={"step": self.step_count, "max_steps": self.max_steps},
             )
@@ -63,10 +63,13 @@ class SQLEnv:
         elif self.step_count >= self.max_steps:
             self.done = True
 
+        # Strictly clamp scores to (0.05, 0.95) for evaluators
+        safe_score = min(max(score, 0.05), 0.95)
+
         reward = Reward(
-            value=min(max(score, 0.01), 0.99),
+            value=safe_score,
             reason=reason,
-            partial_credits={"progress": round(score, 3)},
+            partial_credits={"progress": round(safe_score, 3)},
         )
 
         return StepResponse(

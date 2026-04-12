@@ -144,10 +144,10 @@ def run_task(client: OpenAI, env: SQLEnv, task_id: str) -> float:
             action_dict = parse_action(raw)
 
             if action_dict is None:
-                log_step(step, "parse_error", 0.01, False, "Failed to parse action")
+                log_step(step, "parse_error", 0.05, False, "Failed to parse action")
                 history.append({"role": "assistant", "content": raw})
                 history.append({"role": "user", "content": "Invalid JSON. Try again with only a JSON object."})
-                rewards.append(0.01)
+                rewards.append(0.05)
                 steps_taken = step
                 continue
 
@@ -158,7 +158,7 @@ def run_task(client: OpenAI, env: SQLEnv, task_id: str) -> float:
                 resp = env.step(action_obj)
                 
                 obs = resp.observation.model_dump()
-                reward = min(max(resp.reward.value, 0.01), 0.99)
+                reward = min(max(resp.reward.value, 0.05), 0.95)
                 done = resp.done
                 error = resp.observation.error_message
 
@@ -176,8 +176,8 @@ def run_task(client: OpenAI, env: SQLEnv, task_id: str) -> float:
                     success = reward >= 0.5
                     break
             except Exception as e:
-                log_step(step, "runtime_error", 0.01, False, str(e))
-                rewards.append(0.01)
+                log_step(step, "runtime_error", 0.05, False, str(e))
+                rewards.append(0.05)
                 steps_taken = step
                 break
 
@@ -186,12 +186,12 @@ def run_task(client: OpenAI, env: SQLEnv, task_id: str) -> float:
     finally:
         # Guarantee at least one reward so [END] line is never empty
         if not rewards:
-            rewards.append(0.01)
+            rewards.append(0.05)
         # Final safety clamp for the rewards list
-        clamped_rewards = [min(max(r, 0.01), 0.99) for r in rewards]
+        clamped_rewards = [min(max(r, 0.05), 0.95) for r in rewards]
         log_end(success=success, steps=steps_taken, rewards=clamped_rewards)
 
-    return clamped_rewards[-1] if clamped_rewards else 0.01
+    return clamped_rewards[-1] if clamped_rewards else 0.05
 
 
 # ── Main ──────────────────────────────────────────────────────────────
@@ -202,11 +202,11 @@ def main() -> None:
     # Initialize Environment
     env = SQLEnv()
 
-    # Determine which tasks to run
-    tasks = [SINGLE_TASK] if SINGLE_TASK else ALL_TASKS
+    # Determine which task to run (ONLY ONE TASK PER EXECUTION)
+    # Default to task1 if not specified
+    task_id = SINGLE_TASK if SINGLE_TASK else "task1"
 
-    for task_id in tasks:
-        run_task(client, env, task_id)
+    run_task(client, env, task_id)
         
     env.close()
 
