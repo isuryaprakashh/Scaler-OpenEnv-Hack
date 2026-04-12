@@ -122,7 +122,7 @@ class SQLEnv:
                 cols = [d[0] for d in cursor.description]
                 rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
                 # Mark easy task as solved if we got results from a valid SELECT
-                if rows and self.current_task_id == "task1":
+                if rows and self.current_task_id == "task-0":
                     sql_upper = sql.upper()
                     if "SELECT" in sql_upper and "USERS" in sql_upper and "AND" in sql_upper and "ANDD" not in sql_upper:
                         self.conn._easy_solved = True

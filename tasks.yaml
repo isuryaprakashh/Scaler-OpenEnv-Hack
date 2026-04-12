@@ -1,0 +1,15 @@
+tasks:
+  - id: task-0
+    name: Syntax Debugger
+    grader:
+      type: custom
+
+  - id: task-1
+    name: Performance Tuner
+    grader:
+      type: custom
+
+  - id: task-2
+    name: Schema Architect
+    grader:
+      type: custom
