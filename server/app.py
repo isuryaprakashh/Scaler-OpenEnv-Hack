@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI, HTTPException, Response
-from .models import Action, StepResponse, State, TaskInfo, Reward
+from .models import Action, StepResponse, Observation, Reward
 from .logic import SQLEnv
 from .tasks import TASKS
 
@@ -15,7 +15,7 @@ async def health():
     return {"status": "ok", "environment": "sql-debugger-v1"}
 
 
-@app.post("/reset", response_model=State)
+@app.post("/reset", response_model=Observation)
 async def reset(task_req: dict = None):
     task_id = "task-0"
     if task_req and "task_id" in task_req:
@@ -34,7 +34,7 @@ async def step(action: Action):
     return env.step(action)
 
 
-@app.get("/state", response_model=State)
+@app.get("/state", response_model=Observation)
 async def get_state():
     return env.get_state()
 
