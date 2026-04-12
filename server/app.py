@@ -56,13 +56,15 @@ async def list_tasks():
             "objective": t.objective,
             "max_steps": t.max_steps,
             "grader": True,
+            "has_grader": True,
+            "grading": True,
         }
         for t in TASKS.values()
     ]
 
 
 @app.post("/grade")
-async def grade():
+async def grade(request_body: dict = None):
     if not env.current_task_id:
         raise HTTPException(status_code=400, detail="Call /reset first.")
     task = TASKS[env.current_task_id]

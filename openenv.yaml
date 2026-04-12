@@ -21,6 +21,7 @@ tasks:
     max_steps: 6
     objective: Fix a broken SQL query (ANDD typo) to retrieve user data.
     grader: true
+    has_grader: true
 
   - id: task2
     name: Performance Tuner
@@ -28,6 +29,7 @@ tasks:
     max_steps: 8
     objective: Add a missing index on customer_id to optimize queries.
     grader: true
+    has_grader: true
 
   - id: task3
     name: Schema Architect
@@ -35,6 +37,7 @@ tasks:
     max_steps: 15
     objective: Normalize a denormalized table into projects and managers.
     grader: true
+    has_grader: true
 
 observation_space:
   type: object
