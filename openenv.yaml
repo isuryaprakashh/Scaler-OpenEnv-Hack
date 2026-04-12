@@ -20,21 +20,24 @@ tasks:
     difficulty: easy
     max_steps: 6
     objective: Fix a broken SQL query (ANDD typo) to retrieve user data.
-    grader: "server.grader:grade"
+    grader:
+      type: custom
 
   - id: task-1
     name: Performance Tuner
     difficulty: medium
     max_steps: 8
     objective: Add a missing index on customer_id to optimize queries.
-    grader: "server.grader:grade"
+    grader:
+      type: custom
 
   - id: task-2
     name: Schema Architect
     difficulty: hard
     max_steps: 15
     objective: Normalize a denormalized table into projects and managers.
-    grader: "server.grader:grade"
+    grader:
+      type: custom
 
 observation_space:
   type: object
