@@ -55,11 +55,11 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
         flush=True,
     )
 
-def log_end(success: bool, steps: int, rewards: List[float]) -> None:
-    # Format: [END] success=<true|false> steps=<n> rewards=<r1,r2,...,rn>
+def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
+    # Format: [END] success=<true|false> steps=<n> score=<score> rewards=<r1,r2,...,rn>
     rstr = ",".join(f"{r:.2f}" for r in rewards)
     print(
-        f"[END] success={str(success).lower()} steps={steps} rewards={rstr}",
+        f"[END] success={str(success).lower()} steps={steps} score={score:.3f} rewards={rstr}",
         flush=True,
     )
 
@@ -189,7 +189,8 @@ def run_task(client: OpenAI, env: SQLEnv, task_id: str) -> float:
             rewards.append(0.05)
         # Final safety clamp for the rewards list
         clamped_rewards = [min(max(r, 0.05), 0.95) for r in rewards]
-        log_end(success=success, steps=steps_taken, rewards=clamped_rewards)
+        final_score = clamped_rewards[-1] if clamped_rewards else 0.05
+        log_end(success=success, steps=steps_taken, score=final_score, rewards=clamped_rewards)
 
     return clamped_rewards[-1] if clamped_rewards else 0.05
 

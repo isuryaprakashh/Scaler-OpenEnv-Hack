@@ -72,8 +72,10 @@ async def grade():
     return {
         "task_id": env.current_task_id,
         "score": score,
+        "value": score,  # Aligns with Reward schema
+        "reward": score, # Alternative name
         "reason": reason,
-        "resolved": raw_score >= 0.99,
+        "resolved": raw_score >= 0.95,
         "steps_used": env.step_count,
     }
 
