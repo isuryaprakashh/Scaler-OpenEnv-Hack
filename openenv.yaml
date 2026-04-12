@@ -1,44 +1,44 @@
 version: "1.0"
-
 name: "sql-debugger-agent"
+description: "SQL Database Debugger Agent evaluates AI agents on their ability to debug broken queries and optimize database performance."
+version: "1.0.0"
+author: "SQLDebugger Team"
+tags:
+  - openenv
+  - sql
+  - database
+  - debugging
 
-description: "SQL debugging RL environment"
+environment:
+  type: http
+  entry_point: server.app:app
+  port: 7860
 
 tasks:
   - id: task-0
     name: Syntax Debugger
-    description: Fix SQL typo
     difficulty: easy
     max_steps: 6
-    objective: Fix a broken SQL query (ANDD typo) to retrieve user data.
-    grader: tasks:EasyTask.grade
+    description: Fix a broken SQL query (ANDD typo) to retrieve user data.
+    grader: server.tasks:EasyTask.grade
 
   - id: task-1
     name: Performance Tuner
-    description: Add index
     difficulty: medium
     max_steps: 8
-    objective: Add a missing index on customer_id to optimize queries.
-    grader: tasks:MediumTask.grade
+    description: Add a missing index on customer_id to optimize queries.
+    grader: server.tasks:MediumTask.grade
 
   - id: task-2
     name: Schema Architect
-    description: Normalize schema
     difficulty: hard
     max_steps: 15
-    objective: Normalize a denormalized projects table into projects + managers.
-    grader: tasks:HardTask.grade
+    description: Normalize a denormalized projects table into projects + managers.
+    grader: server.tasks:HardTask.grade
 
 observation_space:
-  type: object
+  type: dict
   properties:
-    result_set:
-      type: array
-      items: { type: object }
-      nullable: true
-    error_message:
-      type: string
-      nullable: true
     schema_metadata:
       type: array
       items:
@@ -49,46 +49,29 @@ observation_space:
           row_count: { type: integer }
     last_action_result:
       type: string
-      nullable: true
     task_description: { type: string }
     broken_query:
       type: string
       nullable: true
+    reward:
+      type: number
+    done:
+      type: boolean
 
 action_space:
-  type: object
+  type: dict
   properties:
     action_type:
       type: string
-      enum:
-        - execute_sql
-        - get_schema
-        - get_table_info
-        - submit
+      enum: [execute_sql, get_schema, get_table_info, submit]
     params:
       type: object
-      description: >
-        Key-value parameters:
-        - execute_sql: { sql: str }
-        - get_table_info: { table: str }
-        - submit: { sql: str } (optional)
 
 reward_space:
-  type: object
+  type: dict
   properties:
     value:
       type: number
       minimum: 0.05
       maximum: 0.95
     reason: { type: string }
-    partial_credits:
-      type: object
-      additionalProperties: { type: number }
-
-endpoints:
-  reset:  POST /reset
-  step:   POST /step
-  state:  GET  /state
-  tasks:  GET  /tasks
-  grade:  POST /grade
-  health: GET  /health

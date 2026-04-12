@@ -1,9 +1,11 @@
 import os
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
-from models import Action, StepResponse, Observation, Reward
-from logic import SQLEnv
-from tasks import TASKS
+
+# Root models
+import models
+from .environment import SQLEnv
+from .tasks import TASKS
 
 app = FastAPI(title="SQL Debugger Agent Environment")
 
@@ -16,7 +18,7 @@ async def health():
     return {"status": "ok", "environment": "sql-debugger-v1"}
 
 
-@app.post("/reset", response_model=Observation)
+@app.post("/reset", response_model=models.Observation)
 async def reset(task_req: dict = None):
     task_id = "task-0"
     if task_req and "task_id" in task_req:
@@ -30,12 +32,12 @@ async def reset(task_req: dict = None):
     return obs
 
 
-@app.post("/step", response_model=StepResponse)
-async def step(action: Action):
+@app.post("/step", response_model=models.StepResponse)
+async def step(action: models.Action):
     return env.step(action)
 
 
-@app.get("/state", response_model=Observation)
+@app.get("/state", response_model=models.Observation)
 async def get_state():
     return env.get_state()
 
@@ -87,8 +89,8 @@ async def grade(request_body: dict = None):
 def main():
     """Main entry point for multi-mode deployment."""
     port = int(os.getenv("PORT", 7860))
-    # Note: Using string import for reload safety
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)
+    # Standard entry point relative to root
+    uvicorn.run("server.app:app", host="0.0.0.0", port=port, reload=True)
 
 
 if __name__ == "__main__":

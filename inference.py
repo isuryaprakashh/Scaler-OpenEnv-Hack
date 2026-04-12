@@ -21,8 +21,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 # Direct environmental imports - bypasses HTTP for better reliability in eval
-from server.logic import SQLEnv
-from server.models import Action, ActionType
+from server.environment import SQLEnv
+from models import Action, ActionType
 
 load_dotenv()
 
