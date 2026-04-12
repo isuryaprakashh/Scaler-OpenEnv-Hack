@@ -15,6 +15,8 @@ class Task:
     def setup(self, conn: sqlite3.Connection):
         raise NotImplementedError
 
+    def grade(self, conn: sqlite3.Connection) -> Tuple[float, str]:
+        """Grade current DB state. Returns (score 0-1, reason)."""
         return 0.05, "Not graded"
 
     def get_broken_query(self) -> Optional[str]:
@@ -141,18 +143,18 @@ class HardTask(Task):
 
 
 TASKS = {
-    "task1": EasyTask(
-        "task1", "Syntax Debugger", "easy",
+    "task-0": EasyTask(
+        "task-0", "Syntax Debugger", "easy",
         "A SQL query has a typo (ANDD instead of AND). Fix it so it returns correct results.",
         "Fix the broken SQL query to retrieve user data correctly.", 6
     ),
-    "task2": MediumTask(
-        "task2", "Performance Tuner", "medium",
+    "task-1": MediumTask(
+        "task-1", "Performance Tuner", "medium",
         "The orders table has 200 rows but no indexes. Queries filtering by customer_id are slow.",
         "Add necessary indexes to optimize data retrieval on orders.", 8
     ),
-    "task3": HardTask(
-        "task3", "Schema Architect", "hard",
+    "task-2": HardTask(
+        "task-2", "Schema Architect", "hard",
         "The projects table stores redundant manager info. Normalize it into separate tables.",
         "Split into projects and managers tables with a foreign key relationship.", 15
     ),

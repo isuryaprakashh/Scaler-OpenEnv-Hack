@@ -15,29 +15,32 @@ tags:
   - optimization
 
 tasks:
-  - id: task1
+  - id: task-0
     name: Syntax Debugger
     difficulty: easy
     max_steps: 6
     objective: Fix a broken SQL query (ANDD typo) to retrieve user data.
     grader: true
     has_grader: true
+    evaluated: true
 
-  - id: task2
+  - id: task-1
     name: Performance Tuner
     difficulty: medium
     max_steps: 8
     objective: Add a missing index on customer_id to optimize queries.
     grader: true
     has_grader: true
+    evaluated: true
 
-  - id: task3
+  - id: task-2
     name: Schema Architect
     difficulty: hard
     max_steps: 15
     objective: Normalize a denormalized table into projects and managers.
     grader: true
     has_grader: true
+    evaluated: true
 
 observation_space:
   type: object

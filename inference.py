@@ -36,8 +36,8 @@ if not HF_TOKEN:
     print("[ERROR] HF_TOKEN is not set. Environment variable is mandatory.", file=sys.stderr)
     sys.exit(1)
 
-ALL_TASKS = ["task1", "task2", "task3"]
-SINGLE_TASK = os.getenv("SQL_ENV_TASK", "")  # empty → run all
+ALL_TASKS = ["task-0", "task-1", "task-2"]
+SINGLE_TASK = os.getenv("SQL_ENV_TASK", "task-0")  # Default to first task
 BENCHMARK = "sql-debugger-agent"
 MAX_STEPS = 10
 TEMPERATURE = 0.2
