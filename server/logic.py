@@ -41,7 +41,7 @@ class SQLEnv:
         if self.done:
             return StepResponse(
                 observation=self._build_obs("Episode already finished."),
-                reward=Reward(value=0.0, reason="Episode finished"),
+                reward=Reward(value=0.01, reason="Episode finished"),
                 done=True,
                 info={"step": self.step_count, "max_steps": self.max_steps},
             )
