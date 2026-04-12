@@ -204,12 +204,10 @@ def main() -> None:
     env = SQLEnv()
 
     # Determine which task to run (ONLY ONE TASK PER EXECUTION)
-    # Default to task1 if not specified
-    task_id = SINGLE_TASK if SINGLE_TASK else "task1"
+    # Default to task-0 if not specified
+    task_id = SINGLE_TASK if SINGLE_TASK else "task-0"
 
     run_task(client, env, task_id)
-        
-    env.close()
 
 if __name__ == "__main__":
     main()
