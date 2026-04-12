@@ -65,12 +65,14 @@ async def grade():
     if not env.current_task_id:
         raise HTTPException(status_code=400, detail="Call /reset first.")
     task = TASKS[env.current_task_id]
-    score, reason = task.grade(env.conn)
+    raw_score, reason = task.grade(env.conn)
+    # Strictly clamp to (0, 1) — evaluator rejects 0.0 and 1.0
+    score = min(max(raw_score, 0.01), 0.99)
     return {
         "task_id": env.current_task_id,
         "score": score,
         "reason": reason,
-        "resolved": score >= 0.99,
+        "resolved": raw_score >= 0.99,
         "steps_used": env.step_count,
     }
 

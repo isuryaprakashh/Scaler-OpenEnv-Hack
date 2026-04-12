@@ -184,6 +184,9 @@ def run_task(client: OpenAI, env: SQLEnv, task_id: str) -> float:
     except Exception as exc:
         print(f"[DEBUG] Error in {task_id}: {exc}", file=sys.stderr)
     finally:
+        # Guarantee at least one reward so [END] line is never empty
+        if not rewards:
+            rewards.append(0.01)
         # Final safety clamp for the rewards list
         clamped_rewards = [min(max(r, 0.01), 0.99) for r in rewards]
         log_end(success=success, steps=steps_taken, rewards=clamped_rewards)

@@ -34,7 +34,7 @@ class Observation(BaseModel):
 
 
 class Reward(BaseModel):
-    value: float = Field(ge=0.0, le=1.0)
+    value: float = Field(gt=0.0, lt=1.0)
     reason: str
     partial_credits: Dict[str, float] = Field(default_factory=dict)
 
