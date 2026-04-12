@@ -17,18 +17,24 @@ import sys
 import textwrap
 from typing import List, Optional
 
-import requests
 from dotenv import load_dotenv
 from openai import OpenAI
+
+# Direct environmental imports - bypasses HTTP for better reliability in eval
+from server.logic import SQLEnv
+from server.models import Action, ActionType
 
 load_dotenv()
 
 # ── Config ────────────────────────────────────────────────────────────
+# Defaults as required by guidelines
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 HF_TOKEN = os.getenv("HF_TOKEN")
-LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
-ENV_URL = os.getenv("ENV_URL", "http://localhost:7860")
+
+if not HF_TOKEN:
+    print("[ERROR] HF_TOKEN is not set. Environment variable is mandatory.", file=sys.stderr)
+    sys.exit(1)
 
 ALL_TASKS = ["task1", "task2", "task3"]
 SINGLE_TASK = os.getenv("SQL_ENV_TASK", "")  # empty → run all
@@ -36,22 +42,24 @@ BENCHMARK = "sql-debugger-agent"
 MAX_STEPS = 10
 TEMPERATURE = 0.2
 
-# ── Logging helpers (mandatory format) ────────────────────────────────
+# ── Logging helpers (STRICT MANDATORY FORMAT) ─────────────────────────
 def log_start(task: str, env: str, model: str) -> None:
     print(f"[START] task={task} env={env} model={model}", flush=True)
 
 def log_step(step: int, action: str, reward: float, done: bool, error: Optional[str]) -> None:
+    # Error must be 'null' if none
+    err_str = error if error else "null"
     print(
         f"[STEP] step={step} action={action} reward={reward:.2f} "
-        f"done={str(done).lower()} error={error or 'null'}",
+        f"done={str(done).lower()} error={err_str}",
         flush=True,
     )
 
-def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
+def log_end(success: bool, steps: int, rewards: List[float]) -> None:
+    # Format: [END] success=<true|false> steps=<n> rewards=<r1,r2,...,rn>
     rstr = ",".join(f"{r:.2f}" for r in rewards)
     print(
-        f"[END] success={str(success).lower()} steps={steps} "
-        f"score={score:.2f} rewards={rstr}",
+        f"[END] success={str(success).lower()} steps={steps} rewards={rstr}",
         flush=True,
     )
 
@@ -100,20 +108,18 @@ def parse_action(raw: str) -> Optional[dict]:
 
 
 # ── Run one task ──────────────────────────────────────────────────────
-def run_task(client: OpenAI, task_id: str) -> float:
-    """Run a single task against the environment. Returns the final score."""
+def run_task(client: OpenAI, env: SQLEnv, task_id: str) -> float:
+    """Run a single task against the environment. Returns the final reward."""
     rewards: List[float] = []
     steps_taken = 0
     success = False
-    score = 0.0
 
     log_start(task=task_id, env=BENCHMARK, model=MODEL_NAME)
 
     try:
-        # Reset
-        r = requests.post(f"{ENV_URL}/reset", json={"task_id": task_id}, timeout=30)
-        r.raise_for_status()
-        obs = r.json()
+        # Reset environment
+        obs_obj = env.reset(task_id)
+        obs = obs_obj.model_dump()
 
         history = []
 
@@ -123,7 +129,7 @@ def run_task(client: OpenAI, task_id: str) -> float:
 
             messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
-                *history[-8:],  # keep last 4 turns
+                *history[-8:],  # maintain context
                 {"role": "user", "content": user_msg},
             ]
 
@@ -138,74 +144,66 @@ def run_task(client: OpenAI, task_id: str) -> float:
             action_dict = parse_action(raw)
 
             if action_dict is None:
-                log_step(step, raw[:80], 0.0, False, "Failed to parse action")
+                log_step(step, "parse_error", 0.0, False, "Failed to parse action")
                 history.append({"role": "assistant", "content": raw})
                 history.append({"role": "user", "content": "Invalid JSON. Try again with only a JSON object."})
                 rewards.append(0.0)
                 steps_taken = step
                 continue
 
-            # Step env
-            sr = requests.post(f"{ENV_URL}/step", json=action_dict, timeout=30)
-            sr.raise_for_status()
-            data = sr.json()
+            # Step env directly
+            try:
+                # Validate action dict into Pydantic model
+                action_obj = Action(**action_dict)
+                resp = env.step(action_obj)
+                
+                obs = resp.observation.model_dump()
+                reward = resp.reward.value
+                done = resp.done
+                error = resp.observation.error_message
 
-            obs = data["observation"]
-            reward = data["reward"]["value"]
-            done = data["done"]
-            error = data["observation"].get("error_message")
+                rewards.append(reward)
+                steps_taken = step
 
-            rewards.append(reward)
-            steps_taken = step
+                # Clean action string for logging
+                action_str = f"{action_obj.action_type.value}({json.dumps(action_obj.params)})"
+                log_step(step, action_str, reward, done, error)
 
-            action_str = json.dumps(action_dict)
-            log_step(step, action_str, reward, done, error)
+                history.append({"role": "assistant", "content": raw})
+                history.append({"role": "user", "content": f"Result: {obs.get('last_action_result', '')}"})
 
-            history.append({"role": "assistant", "content": raw})
-            history.append({"role": "user", "content": f"Result: {obs.get('last_action_result', '')}"})
-
-            if done:
+                if done:
+                    success = reward >= 0.5
+                    break
+            except Exception as e:
+                log_step(step, "runtime_error", 0.0, False, str(e))
+                rewards.append(0.0)
+                steps_taken = step
                 break
-
-        score = rewards[-1] if rewards else 0.01
-        score = min(max(score, 0.01), 0.99)
-        success = score >= 0.5
 
     except Exception as exc:
         print(f"[DEBUG] Error in {task_id}: {exc}", file=sys.stderr)
-
     finally:
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+        log_end(success=success, steps=steps_taken, rewards=rewards)
 
-    return score
+    return rewards[-1] if rewards else 0.0
 
 
 # ── Main ──────────────────────────────────────────────────────────────
 def main() -> None:
-    if not HF_TOKEN:
-        print("[ERROR] HF_TOKEN is not set. Export it or add to .env", file=sys.stderr)
-        sys.exit(1)
-
+    # Initialize OpenAI client
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+    
+    # Initialize Environment
+    env = SQLEnv()
 
     # Determine which tasks to run
     tasks = [SINGLE_TASK] if SINGLE_TASK else ALL_TASKS
 
-    scores = {}
     for task_id in tasks:
-        scores[task_id] = run_task(client, task_id)
-
-    # Summary
-    print("[DEBUG] " + "=" * 50, flush=True)
-    print("[DEBUG] BASELINE RESULTS SUMMARY", flush=True)
-    print("[DEBUG] " + "=" * 50, flush=True)
-    for tid, sc in scores.items():
-        status = "✓ PASS" if sc >= 0.5 else "✗ FAIL"
-        print(f"[DEBUG]   {tid}: score={sc:.2f}  {status}", flush=True)
-    avg = sum(scores.values()) / len(scores) if scores else 0.0
-    print(f"[DEBUG]   Average: {avg:.2f}", flush=True)
-    print("[DEBUG] " + "=" * 50, flush=True)
-
+        run_task(client, env, task_id)
+        
+    env.close()
 
 if __name__ == "__main__":
     main()
