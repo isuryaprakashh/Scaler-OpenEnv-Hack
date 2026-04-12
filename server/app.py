@@ -55,6 +55,7 @@ async def list_tasks():
             "description": t.description,
             "objective": t.objective,
             "max_steps": t.max_steps,
+            "grader": True,
         }
         for t in TASKS.values()
     ]

@@ -15,9 +15,7 @@ class Task:
     def setup(self, conn: sqlite3.Connection):
         raise NotImplementedError
 
-    def grade(self, conn: sqlite3.Connection) -> Tuple[float, str]:
-        """Grade current DB state. Returns (score 0-1, reason)."""
-        return 0.01, "Not graded"
+        return 0.05, "Not graded"
 
     def get_broken_query(self) -> Optional[str]:
         """Return the broken query the agent must fix (task1 only)."""
@@ -45,8 +43,8 @@ class EasyTask(Task):
         # "last_successful_select" flag was set on the connection.
         flag = getattr(conn, "_easy_solved", False)
         if flag:
-            return 0.99, "Query fixed — correct results returned."
-        return 0.01, "The broken query has not been fixed yet."
+            return 0.95, "Query fixed — correct results returned."
+        return 0.05, "The broken query has not been fixed yet."
 
 
 class MediumTask(Task):
@@ -72,8 +70,8 @@ class MediumTask(Task):
             info = conn.execute(f"PRAGMA index_info('{idx_name}')").fetchall()
             cols = [c[2] for c in info]
             if "customer_id" in cols:
-                return 0.99, "Index on customer_id created — query is now optimized."
-        return 0.01, "No index on customer_id found yet."
+                return 0.95, "Index on customer_id created — query is now optimized."
+        return 0.05, "No index on customer_id found yet."
 
 
 class HardTask(Task):
@@ -126,7 +124,7 @@ class HardTask(Task):
         proj_count = cur.fetchone()[0]
 
         if mgr_count >= 2 and proj_count >= 4:
-            return 0.99, "Schema fully normalized with correct data migration."
+            return 0.95, "Schema fully normalized with correct data migration."
         return 0.8, "Schema normalized but data migration appears incomplete."
 
 

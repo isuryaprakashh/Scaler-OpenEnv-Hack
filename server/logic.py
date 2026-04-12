@@ -56,9 +56,9 @@ class SQLEnv:
         task = TASKS[self.current_task_id]
         score, reason = task.grade(self.conn)
 
-        # Task solved — keep full 0.99 score
-        if score >= 0.99:
-            score = 0.99
+        # Task solved — keep full 0.95 score
+        if score >= 0.95:
+            score = 0.95
             self.done = True
         elif self.step_count >= self.max_steps:
             self.done = True
