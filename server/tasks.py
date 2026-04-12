@@ -159,3 +159,18 @@ TASKS = {
         "Split into projects and managers tables with a foreign key relationship.", 15
     ),
 }
+
+
+# ── Standalone grader entry-points (for openenv.yaml discovery) ──────
+# The validator imports these directly: server.tasks:grade_task_0
+def grade_task_0(conn):
+    """Grade the Syntax Debugger task."""
+    return TASKS["task-0"].grade(conn)
+
+def grade_task_1(conn):
+    """Grade the Performance Tuner task."""
+    return TASKS["task-1"].grade(conn)
+
+def grade_task_2(conn):
+    """Grade the Schema Architect task."""
+    return TASKS["task-2"].grade(conn)

@@ -1,7 +1,6 @@
 version: "1.0"
 name: "sql-debugger-agent"
 description: "SQL Database Debugger Agent evaluates AI agents on their ability to debug broken queries and optimize database performance."
-version: "1.0.0"
 author: "SQLDebugger Team"
 tags:
   - openenv
@@ -20,39 +19,33 @@ tasks:
     difficulty: easy
     max_steps: 6
     description: Fix a broken SQL query (ANDD typo) to retrieve user data.
-    grader: server.tasks:EasyTask.grade
+    grader: server.tasks:grade_task_0
 
   - id: task-1
     name: Performance Tuner
     difficulty: medium
     max_steps: 8
     description: Add a missing index on customer_id to optimize queries.
-    grader: server.tasks:MediumTask.grade
+    grader: server.tasks:grade_task_1
 
   - id: task-2
     name: Schema Architect
     difficulty: hard
     max_steps: 15
     description: Normalize a denormalized projects table into projects + managers.
-    grader: server.tasks:HardTask.grade
+    grader: server.tasks:grade_task_2
 
 observation_space:
   type: dict
   properties:
     schema_metadata:
       type: array
-      items:
-        type: object
-        properties:
-          table_name: { type: string }
-          columns: { type: array, items: { type: string } }
-          row_count: { type: integer }
     last_action_result:
       type: string
-    task_description: { type: string }
+    task_description:
+      type: string
     broken_query:
       type: string
-      nullable: true
     reward:
       type: number
     done:
@@ -74,4 +67,5 @@ reward_space:
       type: number
       minimum: 0.05
       maximum: 0.95
-    reason: { type: string }
+    reason:
+      type: string
