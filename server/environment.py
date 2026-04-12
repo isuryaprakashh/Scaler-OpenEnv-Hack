@@ -2,25 +2,9 @@ import sqlite3
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-# Root models are accessible from root-level logic, 
-# but inside server/ package, we use parent import
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-try:
-    from models import (
-        Action, ActionType, Observation, Reward, StepResponse, TableSummary,
-    )
-except ImportError:
-    # Fallback for direct execution
-    import models
-    Observation = models.Observation
-    Reward = models.Reward
-    StepResponse = models.StepResponse
-    Action = models.Action
-    ActionType = models.ActionType
-    TableSummary = models.TableSummary
-
+from models import (
+    Action, ActionType, Observation, Reward, StepResponse, TableSummary,
+)
 from .tasks import TASKS
 
 
