@@ -1,4 +1,5 @@
 import os
+import uvicorn
 from fastapi import FastAPI, HTTPException, Response
 from .models import Action, StepResponse, Observation, Reward
 from .logic import SQLEnv
@@ -81,3 +82,13 @@ async def grade(request_body: dict = None):
         "resolved": raw_score >= 0.95,
         "steps_used": env.step_count,
     }
+
+
+def main():
+    """Main entry point for multi-mode deployment."""
+    port = int(os.getenv("PORT", 7860))
+    uvicorn.run("server.app:app", host="0.0.0.0", port=port, reload=True)
+
+
+if __name__ == "__main__":
+    main()
