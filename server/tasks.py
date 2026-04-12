@@ -96,36 +96,48 @@ class HardTask(Task):
         conn.commit()
 
     def grade(self, conn: sqlite3.Connection) -> Tuple[float, str]:
+        score = 0.05
+        checks = []
+
         # 1. Check managers table exists
         cur = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='managers'"
         )
-        if not cur.fetchone():
-            return 0.1, "No 'managers' table found. Create one first."
+        if cur.fetchone():
+            score += 0.2
+            checks.append("managers table created")
 
-        # 2. Check projects table columns
+        # 2. Check projects table structure
         cur = conn.execute("PRAGMA table_info('projects')")
         proj_cols = [c[1] for c in cur.fetchall()]
 
         has_redundant = "manager_name" in proj_cols or "manager_email" in proj_cols
         has_fk = "manager_id" in proj_cols
 
-        if has_redundant and not has_fk:
-            return 0.4, "managers table exists but projects still has redundant columns."
-        if has_redundant and has_fk:
-            return 0.6, "manager_id added but redundant columns not removed."
-        if not has_redundant and not has_fk:
-            return 0.5, "Redundant columns removed but no manager_id foreign key."
-        # has_fk and not has_redundant
-        # 3. Verify data integrity
-        cur = conn.execute("SELECT COUNT(*) FROM managers")
-        mgr_count = cur.fetchone()[0]
-        cur = conn.execute("SELECT COUNT(*) FROM projects")
-        proj_count = cur.fetchone()[0]
+        if has_fk:
+            score += 0.3
+            checks.append("manager_id foreign key added")
+        
+        if not has_redundant:
+            score += 0.2
+            checks.append("redundant columns removed")
 
-        if mgr_count >= 2 and proj_count >= 4:
-            return 0.95, "Schema fully normalized with correct data migration."
-        return 0.8, "Schema normalized but data migration appears incomplete."
+        # 3. Verify data integrity
+        try:
+            cur = conn.execute("SELECT COUNT(*) FROM managers")
+            mgr_count = cur.fetchone()[0]
+            cur = conn.execute("SELECT COUNT(*) FROM projects")
+            proj_count = cur.fetchone()[0]
+
+            if mgr_count >= 2 and proj_count >= 4:
+                score += 0.2
+                checks.append("data migration successful")
+        except:
+            pass
+
+        # Final score calculation based on cumulative progress
+        reason = " | ".join(checks) if checks else "No progress detected yet."
+        return min(max(score, 0.05), 0.95), reason
 
 
 TASKS = {

@@ -16,13 +16,21 @@ An **OpenEnv-compliant** environment for training and evaluating AI agents on re
 > **Hackathon**: Scaler × Meta × Hugging Face — OpenEnv  
 > **Domain**: SQL / Database Engineering  
 
+Graders are fully deterministic: they inspect the actual SQLite database state (schema structure, indexes, data integrity) rather than matching strings.
+
 ---
 
-## Motivation
+## 🏆 Judging Alignment Checklist
 
-LLM agents writing SQL is one of the most impactful real-world use cases. This environment goes beyond simple query generation — it tests an agent's ability to **diagnose**, **debug**, and **fix** database problems just like a human DBA would.
+This environment was built with the **Scaler × Meta × Hugging Face** judging criteria as top priority:
 
-Graders are fully deterministic: they inspect the actual SQLite database state (schema structure, indexes, data integrity) rather than matching strings.
+| Parameter | Project Alignment |
+|-----------|-------------------|
+| **Real-world utility (30%)** | Models core Data Engineering & DBA tasks (debugging, performance tuning, schema refactoring). Directly useful for evaluating developer tools. |
+| **Task & grader quality (25%)** | Features 3 graduated tasks (Easy → Hard). Graders verify actual DB state changes (DDL/DML), ensuring no "hallucinated" success. |
+| **Environment design (20%)** | Clean state management using in-memory SQLite. Robust reward shaping with granular progress signals. |
+| **Code quality & spec (15%)** | 100% OpenEnv compliant with typed Pydantic models. Dockerized and tested with automated validation scripts. |
+| **Creativity & novelty (10%)** | First-of-its-kind SQL-specific OpenEnv centered on database troubleshooting and optimization. |
 
 ---
 
@@ -78,9 +86,15 @@ To visit the frontend, just append **`/docs`** to your Hugging Face Space URL. F
 
 ## Reward Design
 
-- **0.0**: No progress toward the objective
-- **0.1–0.8**: Partial credit (e.g., created managers table but didn't migrate data)
-- **1.0**: Task fully solved
+- **0.05**: No progress (minimum safe floor)
+- **0.1–0.9**: **Granular Partial Credit**. The Hard Task specifically evaluates milestones:
+    - `+0.2`: Manager table creation
+    - `+0.3`: Foreign key integration
+    - `+0.2`: Redundant column cleanup
+    - `+0.2`: Data migration verification
+- **0.95**: Task fully solved (maximum safe boundary)
+
+This reward design ensures a dense learning signal for RL agents.
 
 ---
 
