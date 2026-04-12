@@ -1,9 +1,9 @@
 import os
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
-from .models import Action, StepResponse, Observation, Reward
-from .logic import SQLEnv
-from .tasks import TASKS
+from models import Action, StepResponse, Observation, Reward
+from logic import SQLEnv
+from tasks import TASKS
 
 app = FastAPI(title="SQL Debugger Agent Environment")
 
@@ -87,7 +87,8 @@ async def grade(request_body: dict = None):
 def main():
     """Main entry point for multi-mode deployment."""
     port = int(os.getenv("PORT", 7860))
-    uvicorn.run("server.app:app", host="0.0.0.0", port=port, reload=True)
+    # Note: Using string import for reload safety
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)
 
 
 if __name__ == "__main__":

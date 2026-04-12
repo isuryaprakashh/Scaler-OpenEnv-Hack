@@ -1,43 +1,33 @@
-name: sql-debugger-agent
-version: "1.0.0"
-description: >
-  SQL Database Debugger Agent evaluates AI agents on their ability to
-  debug broken queries, optimize database performance through indexing,
-  and refactor denormalized schemas. Uses in-memory SQLite with
-  deterministic programmatic graders.
+version: "1.0"
 
-author: "SQLDebugger Team"
-tags:
-  - openenv
-  - sql
-  - database
-  - debugging
-  - optimization
+name: "sql-debugger-agent"
+
+description: "SQL debugging RL environment"
 
 tasks:
   - id: task-0
     name: Syntax Debugger
+    description: Fix SQL typo
     difficulty: easy
     max_steps: 6
     objective: Fix a broken SQL query (ANDD typo) to retrieve user data.
-    grader:
-      type: custom
+    grader: tasks:EasyTask.grade
 
   - id: task-1
     name: Performance Tuner
+    description: Add index
     difficulty: medium
     max_steps: 8
     objective: Add a missing index on customer_id to optimize queries.
-    grader:
-      type: custom
+    grader: tasks:MediumTask.grade
 
   - id: task-2
     name: Schema Architect
+    description: Normalize schema
     difficulty: hard
     max_steps: 15
-    objective: Normalize a denormalized table into projects and managers.
-    grader:
-      type: custom
+    objective: Normalize a denormalized projects table into projects + managers.
+    grader: tasks:HardTask.grade
 
 observation_space:
   type: object

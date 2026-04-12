@@ -1,10 +1,12 @@
 import sqlite3
+import os
+import uvicorn
 from typing import Any, Dict, List, Optional, Tuple
 
-from server.models import (
+from models import (
     Action, ActionType, Observation, Reward, StepResponse, TableSummary,
 )
-from server.tasks import TASKS
+from tasks import TASKS
 
 
 class SQLEnv:
@@ -18,33 +20,31 @@ class SQLEnv:
         self.done: bool = False
         self.history: List[str] = []
 
-    # ------------------------------------------------------------------ reset
-    def reset(self, task_id: str = "task1") -> Observation:
-        if self.conn:
-            self.conn.close()
+    def reset(self, task_id: str) -> Observation:
+        """Reset environment to a specific task."""
+        if task_id not in TASKS:
+            task_id = "task-0"
 
         self.current_task_id = task_id
-        self.conn = sqlite3.connect(":memory:", check_same_thread=False)
-        self.conn.row_factory = sqlite3.Row
+        task = TASKS[task_id]
+        self.max_steps = task.max_steps
         self.step_count = 0
         self.done = False
         self.history = []
 
-        task = TASKS[task_id]
-        self.max_steps = task.max_steps
+        # Fresh in-memory DB for each reset
+        self.conn = sqlite3.connect(":memory:", check_same_thread=False)
         task.setup(self.conn)
 
-        return self._build_obs("Environment reset. Inspect the schema and solve the task.")
+        msg = f"Environment reset to {task.name}. {task.objective}"
+        return self._build_obs(msg)
 
-    # ------------------------------------------------------------------ step
     def step(self, action: Action) -> StepResponse:
+        """Perform one environment step."""
         if self.done:
-            return StepResponse(
-                observation=self._build_obs("Episode already finished."),
-                reward=Reward(value=0.05, reason="Episode finished"),
-                done=True,
-                info={"step": self.step_count, "max_steps": self.max_steps},
-            )
+            # Already finished, just return current state
+            score, reason = TASKS[self.current_task_id].grade(self.conn)
+            return self._build_step_response(0.001, reason, "Environment already done.")
 
         self.step_count += 1
         self.history.append(f"Step {self.step_count}: {action.action_type.value}({action.params})")
@@ -76,18 +76,13 @@ class SQLEnv:
             observation=self._build_obs(result_msg),
             reward=reward,
             done=self.done,
-            info={"step": self.step_count, "max_steps": self.max_steps, "resolved": score >= 0.99},
+            info={"step": self.step_count, "max_steps": self.max_steps, "resolved": score >= 0.95},
         )
 
     # ------------------------------------------------------------------ state
-    def state(self) -> Dict[str, Any]:
-        return {
-            "task_id": self.current_task_id,
-            "step": self.step_count,
-            "max_steps": self.max_steps,
-            "done": self.done,
-            "history": self.history,
-        }
+    def get_state(self) -> Observation:
+        """Returns current state as an Observation object."""
+        return self._build_obs("Current state requested.")
 
     # ------------------------------------------------- action dispatch
     def _dispatch(self, action: Action) -> str:
@@ -101,11 +96,10 @@ class SQLEnv:
             return self._get_schema_text()
 
         if at == ActionType.get_table_info:
-            tbl = p.get("table", p.get("table_name", ""))
-            return self._get_table_info(tbl)
+            return self._get_table_info(p.get("table", ""))
 
         if at == ActionType.submit:
-            sql = p.get("sql", "")
+            sql = p.get("sql")
             if sql:
                 return self._exec_sql(sql)
             return "Submission recorded."
@@ -121,11 +115,14 @@ class SQLEnv:
             if cursor.description:
                 cols = [d[0] for d in cursor.description]
                 rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
-                # Mark easy task as solved if we got results from a valid SELECT
+                
+                # FIX: Set the success flag if task-0 is solved
                 if rows and self.current_task_id == "task-0":
                     sql_upper = sql.upper()
+                    # Check if they fixed the ANDD typo
                     if "SELECT" in sql_upper and "USERS" in sql_upper and "AND" in sql_upper and "ANDD" not in sql_upper:
-                        self.conn._easy_solved = True
+                        setattr(self.conn, "_easy_solved", True)
+                
                 display = rows[:10]  # limit display
                 return f"Query returned {len(rows)} row(s):\n{display}"
             else:
@@ -148,46 +145,55 @@ class SQLEnv:
 
     def _get_table_info(self, table: str) -> str:
         if not table:
-            return "Error: provide a 'table' parameter."
+            return "Table name required."
         try:
-            info = self.conn.execute(f"PRAGMA table_info('{table}')").fetchall()
+            cur = self.conn.execute(f"PRAGMA table_info('{table}')")
+            info = cur.fetchall()
             if not info:
                 return f"Table '{table}' not found."
-            cols = [{"name": r[1], "type": r[2], "notnull": bool(r[3]), "pk": bool(r[5])} for r in info]
-            cnt = self.conn.execute(f"SELECT COUNT(*) FROM [{table}]").fetchone()[0]
-            return f"Table '{table}' ({cnt} rows):\n{cols}"
+            
+            summary = []
+            for col in info:
+                summary.append(f"{col[1]} ({col[2]})")
+            
+            cur = self.conn.execute(f"SELECT COUNT(*) FROM {table}")
+            cnt = cur.fetchone()[0]
+            
+            return f"Table: {table}\nRows: {cnt}\nColumns: {', '.join(summary)}"
         except Exception as e:
-            return f"Error: {e}"
+            return f"Error getting table info: {e}"
 
-    # ------------------------------------------------- observation builder
     def _build_obs(self, last_result: str) -> Observation:
+        task = TASKS[self.current_task_id]
+        
+        # Get schema metadata
         schema_meta = []
         try:
             cur = self.conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
-            for row in cur.fetchall():
-                tbl = row[0]
-                cnt = self.conn.execute(f"SELECT COUNT(*) FROM [{tbl}]").fetchone()[0]
-                cols_cur = self.conn.execute(f"PRAGMA table_info('{tbl}')")
-                cols = [c[1] for c in cols_cur.fetchall()]
-                schema_meta.append(TableSummary(table_name=tbl, columns=cols, row_count=cnt))
-        except Exception:
+            tables = [r[0] for r in cur.fetchall()]
+            for t in tables:
+                col_cur = self.conn.execute(f"PRAGMA table_info('{t}')")
+                cols = [c[1] for c in col_cur.fetchall()]
+                cnt_cur = self.conn.execute(f"SELECT COUNT(*) FROM {t}")
+                cnt = cnt_cur.fetchone()[0]
+                schema_meta.append(TableSummary(table_name=t, columns=cols, row_count=cnt))
+        except:
             pass
 
-        task = TASKS[self.current_task_id]
-        broken = task.get_broken_query() if not getattr(self.conn, "_easy_solved", False) else None
-
         return Observation(
+            result_set=None,
+            error_message=None,
             schema_metadata=schema_meta,
             last_action_result=last_result,
-            task_description=(
-                f"Task: {task.name} ({task.difficulty})\n"
-                f"Description: {task.description}\n"
-                f"Objective: {task.objective}"
-            ),
-            broken_query=broken,
+            task_description=task.description,
+            broken_query=task.get_broken_query()
         )
 
-    def close(self):
-        if self.conn:
-            self.conn.close()
-            self.conn = None
+    def _build_step_response(self, score: float, reason: str, msg: str) -> StepResponse:
+        reward = Reward(value=score, reason=reason)
+        return StepResponse(
+            observation=self._build_obs(msg),
+            reward=reward,
+            done=self.done,
+            info={"step": self.step_count}
+        )
