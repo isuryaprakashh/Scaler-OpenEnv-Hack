@@ -7,21 +7,18 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: #111827;
-      --border: #1f2937;
-      --accent: #4f46e5;
-      --accent-hover: #4338ca;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --text: #f9fafb;
-      --text-muted: #9ca3af;
-      --font-sans: 'Inter', -apple-system, sans-serif;
+      --bg: #000000;
+      --card-bg: #0a0a0a;
+      --border: #262626;
+      --border-hover: #404040;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --text-dim: #525252;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
@@ -32,8 +29,8 @@
       color: var(--text);
       font-family: var(--font-sans);
       line-height: 1.5;
-      padding: 1.5rem;
-      max-width: 1200px;
+      padding: 2rem 1.5rem;
+      max-width: 1100px;
       margin: 0 auto;
     }
 
@@ -44,12 +41,12 @@
       align-items: center;
       padding-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.75rem;
     }
 
     .brand-title {
-      font-size: 1.2rem;
-      font-weight: 700;
+      font-size: 1.1rem;
+      font-weight: 600;
       letter-spacing: -0.01em;
     }
 
@@ -69,41 +66,39 @@
       align-items: center;
       gap: 0.4rem;
       font-size: 0.75rem;
-      color: var(--success);
+      color: var(--text-muted);
     }
 
     .dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: var(--success);
+      background: #ffffff;
     }
 
     .link-btn {
       color: var(--text-muted);
       text-decoration: none;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       border: 1px solid var(--border);
-      padding: 0.35rem 0.75rem;
-      border-radius: 6px;
-      transition: all 0.2s;
+      padding: 0.3rem 0.65rem;
+      border-radius: 4px;
+      transition: all 0.15s;
     }
 
     .link-btn:hover {
       color: var(--text);
-      border-color: #374151;
-      background: #1f2937;
+      border-color: var(--border-hover);
     }
 
-    /* Minimal Segmented Task Switcher */
+    /* Minimal Task Navigation Tabs */
     .task-switcher {
       display: flex;
-      background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 3px;
-      margin-bottom: 1.5rem;
-      gap: 3px;
+      border-radius: 6px;
+      padding: 2px;
+      margin-bottom: 1.75rem;
+      background: var(--card-bg);
     }
 
     .task-segment {
@@ -111,9 +106,9 @@
       background: transparent;
       border: none;
       color: var(--text-muted);
-      padding: 0.65rem 0.85rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
       font-weight: 500;
       cursor: pointer;
       display: flex;
@@ -124,27 +119,21 @@
 
     .task-segment:hover:not(.active) {
       color: var(--text);
-      background: rgba(255, 255, 255, 0.03);
     }
 
     .task-segment.active {
-      background: #1f2937;
-      color: #fff;
-      font-weight: 600;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      background: #171717;
+      color: #ffffff;
+      border: 1px solid var(--border);
     }
 
     .badge-tag {
-      font-size: 0.7rem;
-      padding: 0.1rem 0.4rem;
-      border-radius: 4px;
-      font-weight: 600;
+      font-size: 0.68rem;
+      padding: 0.05rem 0.35rem;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
     }
-
-    .tag-easy { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-    .tag-medium { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-    .tag-hard { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-    .tag-real { background: rgba(79, 70, 229, 0.15); color: #818cf8; }
 
     /* Layout Grid */
     .grid {
@@ -160,43 +149,43 @@
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.15rem;
-      margin-bottom: 1.15rem;
+      border-radius: 6px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
     }
 
     .card-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       color: var(--text-muted);
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.65rem;
     }
 
     .objective-text {
-      font-size: 0.9rem;
-      color: #e5e7eb;
-      line-height: 1.45;
+      font-size: 0.88rem;
+      color: #d4d4d4;
+      line-height: 1.5;
     }
 
     .broken-code-box {
-      background: #030712;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      background: #000000;
+      border: 1px solid var(--border);
+      color: #ffffff;
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       padding: 0.6rem 0.8rem;
-      border-radius: 6px;
+      border-radius: 4px;
       margin-top: 0.5rem;
     }
 
     /* Minimal Table Listing */
     .table-row {
-      background: #0d1322;
+      background: #000000;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.65rem 0.85rem;
+      border-radius: 4px;
+      padding: 0.6rem 0.8rem;
       margin-bottom: 0.5rem;
     }
 
@@ -204,10 +193,10 @@
       display: flex;
       justify-content: space-between;
       font-family: var(--font-mono);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #38bdf8;
-      margin-bottom: 0.35rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #ffffff;
+      margin-bottom: 0.3rem;
     }
 
     .cols-wrapper {
@@ -217,60 +206,62 @@
     }
 
     .col-pill {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #171717;
+      border: 1px solid var(--border);
       color: var(--text-muted);
       font-family: var(--font-mono);
-      font-size: 0.72rem;
-      padding: 0.1rem 0.4rem;
-      border-radius: 4px;
+      font-size: 0.7rem;
+      padding: 0.08rem 0.35rem;
+      border-radius: 3px;
     }
 
-    /* Minimal SQL Console */
+    /* SQL Console */
     textarea.editor {
       width: 100%;
       height: 110px;
-      background: #030712;
+      background: #000000;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 4px;
       padding: 0.75rem;
       font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: #a5f3fc;
+      font-size: 0.82rem;
+      color: #ffffff;
       outline: none;
       resize: vertical;
       margin-bottom: 0.75rem;
     }
 
     textarea.editor:focus {
-      border-color: var(--accent);
+      border-color: var(--border-hover);
     }
 
     .action-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
     .btn-exec {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1.1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 500;
+      background: #ffffff;
+      color: #000000;
+      border: 1px solid #ffffff;
+      padding: 0.45rem 1rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.15s;
     }
 
-    .btn-exec:hover { background: var(--accent-hover); }
+    .btn-exec:hover {
+      background: #e5e5e5;
+    }
 
     .action-links {
       display: flex;
-      gap: 0.85rem;
-      font-size: 0.8rem;
+      gap: 1rem;
+      font-size: 0.78rem;
     }
 
     .action-link {
@@ -281,13 +272,13 @@
 
     .action-link:hover { color: var(--text); }
 
-    /* Minimal Progress & Log */
+    /* Minimal Progress Bar */
     .reward-box {
-      background: #0d1322;
+      background: #000000;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 4px;
       padding: 0.75rem 0.85rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
     .reward-top {
@@ -299,52 +290,52 @@
 
     .score-display {
       font-family: var(--font-mono);
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--success);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
     }
 
     .progress-bar {
       width: 100%;
-      height: 6px;
-      background: #1f2937;
-      border-radius: 3px;
+      height: 4px;
+      background: #262626;
+      border-radius: 2px;
       overflow: hidden;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.4rem;
     }
 
     .progress-fill {
       height: 100%;
       width: 5%;
-      background: var(--success);
+      background: #ffffff;
       transition: width 0.25s ease;
     }
 
     .reward-desc {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
     }
 
     .log-box {
-      background: #030712;
+      background: #000000;
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 4px;
       padding: 0.65rem 0.75rem;
       font-family: var(--font-mono);
-      font-size: 0.78rem;
-      height: 150px;
+      font-size: 0.75rem;
+      height: 140px;
       overflow-y: auto;
     }
 
     .log-item {
       margin-bottom: 0.35rem;
-      color: #cbd5e1;
+      color: #a3a3a3;
       white-space: pre-wrap;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
+      border-bottom: 1px solid #171717;
       padding-bottom: 0.25rem;
     }
 
-    .log-time { color: var(--text-muted); }
+    .log-time { color: var(--text-dim); }
   </style>
 </head>
 <body>
@@ -353,31 +344,31 @@
   <header>
     <div>
       <div class="brand-title">SQL Debugger Agent</div>
-      <div class="brand-sub">OpenEnv Benchmark & Database Simulator</div>
+      <div class="brand-sub">OpenEnv Benchmark & Environment</div>
     </div>
     <div class="header-right">
-      <div class="status-indicator"><div class="dot"></div> Online</div>
+      <div class="status-indicator"><div class="dot"></div> Ready</div>
       <a href="/docs" target="_blank" class="link-btn">API Specs (/docs)</a>
     </div>
   </header>
 
-  <!-- Segmented Task Switcher -->
+  <!-- Segmented Navigation -->
   <div class="task-switcher">
     <button class="task-segment active" id="tab-task-0" onclick="switchTask('task-0')">
       <span>1. Syntax Debugger</span>
-      <span class="badge-tag tag-easy">Easy</span>
+      <span class="badge-tag">Easy</span>
     </button>
     <button class="task-segment" id="tab-task-1" onclick="switchTask('task-1')">
       <span>2. Performance Tuner</span>
-      <span class="badge-tag tag-medium">Medium</span>
+      <span class="badge-tag">Medium</span>
     </button>
     <button class="task-segment" id="tab-task-2" onclick="switchTask('task-2')">
       <span>3. Schema Architect</span>
-      <span class="badge-tag tag-hard">Hard</span>
+      <span class="badge-tag">Hard</span>
     </button>
     <button class="task-segment" id="tab-custom-db" onclick="connectRealDb()">
       <span>4. Real Database Mode</span>
-      <span class="badge-tag tag-real">Disk .db</span>
+      <span class="badge-tag">Disk .db</span>
     </button>
   </div>
 
@@ -390,7 +381,7 @@
         <div class="card-label">Task Objective</div>
         <div class="objective-text" id="taskDesc">Loading details...</div>
         <div id="brokenBox" style="display: none;">
-          <div style="font-size: 0.72rem; color: var(--danger); margin-top: 0.4rem; font-weight: 600;">BROKEN QUERY:</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem; font-weight: 600;">BROKEN QUERY:</div>
           <div class="broken-code-box" id="brokenSql"></div>
         </div>
       </div>
@@ -398,10 +389,10 @@
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
           <div class="card-label" style="margin-bottom: 0;">Database Tables</div>
-          <span class="action-link" style="font-size: 0.75rem;" onclick="refreshState()">Sync</span>
+          <span class="action-link" style="font-size: 0.72rem;" onclick="refreshState()">Sync</span>
         </div>
         <div id="tableList">
-          <div style="font-size: 0.8rem; color: var(--text-muted);">Loading tables...</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">Loading tables...</div>
         </div>
       </div>
     </div>
@@ -410,7 +401,7 @@
     <div>
       <div class="card">
         <div class="card-label" style="display: flex; justify-content: space-between;">
-          <span>SQL Editor</span>
+          <span>SQL Console</span>
           <span class="action-link" onclick="loadPreset()">Auto-Fill Solution</span>
         </div>
 
@@ -426,7 +417,7 @@
 
         <div class="reward-box">
           <div class="reward-top">
-            <span style="font-size: 0.78rem; color: var(--text-muted);">Reward Score</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Reward Score</span>
             <span class="score-display" id="scoreVal">0.05</span>
           </div>
           <div class="progress-bar">
@@ -487,7 +478,7 @@
       document.getElementById('brokenBox').style.display = 'none';
       renderTables(obs.schema_metadata || []);
       updateScore(0.95, `Connected to live database (${path}).`);
-      addLog(`Connected to disk database file: ${path}`);
+      addLog(`Connected to database: ${path}`);
     }
 
     async function resetTask() {
@@ -519,14 +510,14 @@
     function renderTables(tables) {
       const container = document.getElementById('tableList');
       if (!tables || !tables.length) {
-        container.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-muted);">No active tables.</div>';
+        container.innerHTML = '<div style="font-size: 0.78rem; color: var(--text-muted);">No active tables.</div>';
         return;
       }
       container.innerHTML = tables.map(tbl => `
         <div class="table-row">
           <div class="table-header">
             <span>${tbl.table_name}</span>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">${tbl.row_count} rows</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">${tbl.row_count} rows</span>
           </div>
           <div class="cols-wrapper">
             ${tbl.columns.map(c => `<span class="col-pill">${c}</span>`).join('')}
