@@ -613,31 +613,32 @@
     }
 
     async function autoSolve() {
-      let inputVal = document.getElementById('sqlInput').value;
+      let inputVal = document.getElementById('sqlInput').value.trim();
       await resetTask();
 
       let sqls = [];
       if (inputVal && (inputVal.includes('ANDD') || inputVal.includes('ORR') || inputVal.includes('SELEC'))) {
-        addLog("AI AGENT", "Inspecting current query... Typo detected!");
         let fixedSql = inputVal.replace(/ANDD/g, 'AND').replace(/ORR/g, 'OR').replace(/SELEC/g, 'SELECT');
-        addLog("AI AGENT", `Fixed query -> ${fixedSql}`);
         sqls = [fixedSql];
-      } else if (currentTask === 'task-0') {
-        addLog("AI AGENT", "Inspecting broken query -> Detected typo 'ANDD'");
-        sqls = ["SELECT * FROM users WHERE name = 'John Doe' AND email = 'john@example.com'"];
-      } else if (currentTask === 'task-1') {
-        addLog("AI AGENT", "Analyzing query performance -> Missing index on customer_id");
-        sqls = ["CREATE INDEX idx_orders_customer ON orders(customer_id)"];
-      } else if (currentTask === 'task-2') {
-        addLog("AI AGENT", "Analyzing schema -> Normalizing projects into projects + managers (3NF)");
-        sqls = [
-          "CREATE TABLE managers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)",
-          "INSERT INTO managers (name, email) SELECT DISTINCT manager_name, manager_email FROM projects",
-          "CREATE TABLE projects_new (id INTEGER PRIMARY KEY, project_name TEXT, manager_id INTEGER REFERENCES managers(id))",
-          "INSERT INTO projects_new (project_name, manager_id) SELECT p.project_name, m.id FROM projects p JOIN managers m ON p.manager_name = m.name",
-          "DROP TABLE projects",
-          "ALTER TABLE projects_new RENAME TO projects"
-        ];
+        addLog("AI AGENT", `Detected typo -> Fixed query: ${fixedSql}`);
+      } else {
+        if (currentTask === 'task-0') {
+          sqls = ["SELECT * FROM users WHERE name = 'John Doe' AND email = 'john@example.com'"];
+          addLog("AI AGENT", "Inspecting broken query -> Fixed 'ANDD' typo to 'AND'");
+        } else if (currentTask === 'task-1') {
+          sqls = ["CREATE INDEX idx_orders_customer ON orders(customer_id)"];
+          addLog("AI AGENT", "Analyzing table -> Created missing index on customer_id");
+        } else if (currentTask === 'task-2') {
+          sqls = [
+            "CREATE TABLE managers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)",
+            "INSERT INTO managers (name, email) SELECT DISTINCT manager_name, manager_email FROM projects",
+            "CREATE TABLE projects_new (id INTEGER PRIMARY KEY, project_name TEXT, manager_id INTEGER REFERENCES managers(id))",
+            "INSERT INTO projects_new (project_name, manager_id) SELECT p.project_name, m.id FROM projects p JOIN managers m ON p.manager_name = m.name",
+            "DROP TABLE projects",
+            "ALTER TABLE projects_new RENAME TO projects"
+          ];
+          addLog("AI AGENT", "Refactoring schema -> Normalized tables to 3NF");
+        }
       }
 
       for (let sql of sqls) {
