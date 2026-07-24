@@ -1,13 +1,13 @@
 """Local test — verifies all 3 tasks work end-to-end without any external API."""
 
-from server.logic import SQLEnv
-from server.models import Action, ActionType
+from server.environment import SQLEnv
+from models import Action, ActionType
 
 
 def test_easy():
     print("=== Task 1: Syntax Debugger (easy) ===")
     env = SQLEnv()
-    obs = env.reset("task1")
+    obs = env.reset("task-0")
     print(f"  Broken query: {obs.broken_query}")
 
     # Fix the query
@@ -18,13 +18,13 @@ def test_easy():
     print(f"  Step 1 — reward={resp.reward.value:.2f}  done={resp.done}  reason={resp.reward.reason}")
     assert resp.reward.value >= 0.5, f"Expected ≥0.5, got {resp.reward.value}"
     assert resp.done, "Should be done"
-    print("  ✓ PASSED\n")
+    print("  PASSED\n")
 
 
 def test_medium():
     print("=== Task 2: Performance Tuner (medium) ===")
     env = SQLEnv()
-    obs = env.reset("task2")
+    obs = env.reset("task-1")
 
     # Explore first
     resp = env.step(Action(action_type=ActionType.get_schema, params={}))
@@ -38,13 +38,13 @@ def test_medium():
     print(f"  Step 2 (index)  — reward={resp.reward.value:.2f}  done={resp.done}  reason={resp.reward.reason}")
     assert resp.reward.value >= 0.5, f"Expected ≥0.5, got {resp.reward.value}"
     assert resp.done, "Should be done"
-    print("  ✓ PASSED\n")
+    print("  PASSED\n")
 
 
 def test_hard():
     print("=== Task 3: Schema Architect (hard) ===")
     env = SQLEnv()
-    obs = env.reset("task3")
+    obs = env.reset("task-2")
 
     steps = [
         "CREATE TABLE managers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)",
@@ -63,11 +63,11 @@ def test_hard():
     print(f"  Final reason: {resp.reward.reason}")
     assert resp.reward.value >= 0.5, f"Expected ≥0.5, got {resp.reward.value}"
     assert resp.done, "Should be done"
-    print("  ✓ PASSED\n")
+    print("  PASSED\n")
 
 
 if __name__ == "__main__":
     test_easy()
     test_medium()
     test_hard()
-    print("All 3 tasks PASSED ✓")
+    print("All 3 tasks PASSED")

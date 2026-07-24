@@ -38,11 +38,26 @@ class SQLEnv:
         msg = f"Environment reset to {task.name}. {task.objective}"
         return self._build_obs(msg)
 
+    def connect_db(self, db_path: str = "real_production.db") -> Observation:
+        """Connect to a real persistent disk database file."""
+        self.current_task_id = "custom-db"
+        self.step_count = 0
+        self.max_steps = 1000
+        self.done = False
+        self.history = []
+
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        msg = f"Connected to live database file: {db_path}"
+        return self._build_obs(msg)
+
     def step(self, action: Action) -> StepResponse:
         """Perform one environment step."""
         if self.done:
             # Already finished, just return current state
-            score, reason = TASKS[self.current_task_id].grade(self.conn)
+            if self.current_task_id in TASKS:
+                score, reason = TASKS[self.current_task_id].grade(self.conn)
+            else:
+                score, reason = 0.95, "Custom live database active."
             return self._build_step_response(0.001, reason, "Environment already done.")
 
         self.step_count += 1
@@ -52,15 +67,18 @@ class SQLEnv:
         result_msg = self._dispatch(action)
 
         # 2. Grade current DB state
-        task = TASKS[self.current_task_id]
-        score, reason = task.grade(self.conn)
-
-        # Task solved — keep full 0.95 score
-        if score >= 0.95:
-            score = 0.95
-            self.done = True
-        elif self.step_count >= self.max_steps:
-            self.done = True
+        if self.current_task_id in TASKS:
+            task = TASKS[self.current_task_id]
+            score, reason = task.grade(self.conn)
+            # Task solved — keep full 0.95 score
+            if score >= 0.95:
+                score = 0.95
+                self.done = True
+            elif self.step_count >= self.max_steps:
+                self.done = True
+        else:
+            score, reason = 0.95, "Custom live database active."
+            self.done = False
 
         # Strictly clamp scores to (0.05, 0.95) for evaluators
         safe_score = min(max(score, 0.05), 0.95)
@@ -109,6 +127,22 @@ class SQLEnv:
         if not sql.strip():
             return "Empty SQL statement."
         try:
+            statements = [s.strip() for s in sql.split(";") if s.strip()]
+            if len(statements) > 1:
+                total_affected = 0
+                last_rows = None
+                for s in statements:
+                    cursor = self.conn.execute(s)
+                    if cursor.description:
+                        cols = [d[0] for d in cursor.description]
+                        last_rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
+                    else:
+                        total_affected += cursor.rowcount
+                self.conn.commit()
+                if last_rows is not None:
+                    return f"Executed {len(statements)} statements. Last query returned {len(last_rows)} row(s):\n{last_rows[:10]}"
+                return f"Executed {len(statements)} statements successfully. Rows affected: {total_affected}"
+
             cursor = self.conn.execute(sql)
             # If the statement returns rows (SELECT, PRAGMA, etc.)
             if cursor.description:
@@ -118,9 +152,8 @@ class SQLEnv:
                 # FIX: Set the success flag if task-0 is solved
                 if rows and self.current_task_id == "task-0":
                     sql_upper = sql.upper()
-                    # Check if they fixed the ANDD typo
                     if "SELECT" in sql_upper and "USERS" in sql_upper and "AND" in sql_upper and "ANDD" not in sql_upper:
-                        setattr(self.conn, "_easy_solved", True)
+                        TASKS["task-0"].solved = True
                 
                 display = rows[:10]  # limit display
                 return f"Query returned {len(rows)} row(s):\n{display}"
@@ -163,7 +196,13 @@ class SQLEnv:
             return f"Error getting table info: {e}"
 
     def _build_obs(self, last_result: str) -> Observation:
-        task = TASKS[self.current_task_id]
+        if self.current_task_id in TASKS:
+            task = TASKS[self.current_task_id]
+            desc = task.description
+            broken = task.get_broken_query()
+        else:
+            desc = "Connected to live disk database. Direct SQL DDL/DML enabled."
+            broken = None
         
         # Get schema metadata
         schema_meta = []
@@ -184,8 +223,8 @@ class SQLEnv:
             error_message=None,
             schema_metadata=schema_meta,
             last_action_result=last_result,
-            task_description=task.description,
-            broken_query=task.get_broken_query()
+            task_description=desc,
+            broken_query=broken
         )
 
     def _build_step_response(self, score: float, reason: str, msg: str) -> StepResponse:

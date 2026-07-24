@@ -1,6 +1,8 @@
 import os
 import uvicorn
 from fastapi import FastAPI, HTTPException, Response
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # Root models
 import models
@@ -9,8 +11,21 @@ from .tasks import TASKS
 
 app = FastAPI(title="SQL Debugger Agent Environment")
 
+# Static files setup for frontend UI
+static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 # Track globally for simpler stateful interaction in single-user env
 env = SQLEnv()
+
+
+@app.get("/")
+async def index():
+    index_file = os.path.join(static_dir, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {"message": "SQL Debugger Agent Environment. Visit /docs for API schema."}
 
 
 @app.get("/health")
@@ -29,6 +44,15 @@ async def reset(task_req: dict = None):
         task_id = "task-0"
         
     obs = env.reset(task_id)
+    return obs
+
+
+@app.post("/connect", response_model=models.Observation)
+async def connect_custom_db(req: dict = None):
+    db_path = "real_production.db"
+    if req and "db_path" in req and req["db_path"]:
+        db_path = req["db_path"]
+    obs = env.connect_db(db_path)
     return obs
 
 

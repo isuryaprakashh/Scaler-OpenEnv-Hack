@@ -29,7 +29,12 @@ class EasyTask(Task):
 
     BROKEN_QUERY = "SELECT * FROM users WHERE name = 'John Doe' ANDD email = 'john@example.com'"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.solved = False
+
     def setup(self, conn: sqlite3.Connection):
+        self.solved = False
         conn.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)")
         conn.execute("INSERT INTO users (name, email) VALUES ('John Doe', 'john@example.com')")
         conn.execute("INSERT INTO users (name, email) VALUES ('Jane Smith', 'jane@example.com')")
@@ -40,11 +45,7 @@ class EasyTask(Task):
         return self.BROKEN_QUERY
 
     def grade(self, conn: sqlite3.Connection) -> Tuple[float, str]:
-        # We check if the agent has successfully executed a corrected query.
-        # The grade is called after every step, so we just check if a
-        # "last_successful_select" flag was set on the connection.
-        flag = getattr(conn, "_easy_solved", False)
-        if flag:
+        if getattr(self, "solved", False):
             return 0.95, "Query fixed — correct results returned."
         return 0.05, "The broken query has not been fixed yet."
 
