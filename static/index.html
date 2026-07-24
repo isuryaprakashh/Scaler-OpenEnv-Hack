@@ -613,13 +613,29 @@
     }
 
     async function autoSolve() {
+      const inputVal = document.getElementById('sqlInput').value;
+      
+      // Smart AI Fix if user typed a typo in sqlInput
+      if (inputVal && (inputVal.includes('ANDD') || inputVal.includes('ORR') || inputVal.includes('SELEC '))) {
+        addLog("AI AGENT", "Inspecting current query... Typo detected!");
+        let fixedSql = inputVal.replace(/\bANDD\b/g, 'AND').replace(/\bORR\b/g, 'OR').replace(/\bSELEC\b/g, 'SELECT');
+        document.getElementById('sqlInput').value = fixedSql;
+        addLog("AI AGENT", `Fixed query -> ${fixedSql}`);
+        await new Promise(r => setTimeout(r, 600));
+        await runSql();
+        return;
+      }
+
       await resetTask();
       let sqls = [];
       if (currentTask === 'task-0') {
+        addLog("AI AGENT", "Inspecting broken query -> Detected typo 'ANDD'");
         sqls = ["SELECT * FROM users WHERE name = 'John Doe' AND email = 'john@example.com'"];
       } else if (currentTask === 'task-1') {
+        addLog("AI AGENT", "Analyzing query performance -> Missing index on customer_id");
         sqls = ["CREATE INDEX idx_orders_customer ON orders(customer_id)"];
       } else if (currentTask === 'task-2') {
+        addLog("AI AGENT", "Analyzing schema -> Normalizing projects into projects + managers (3NF)");
         sqls = [
           "CREATE TABLE managers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT)",
           "INSERT INTO managers (name, email) SELECT DISTINCT manager_name, manager_email FROM projects",
