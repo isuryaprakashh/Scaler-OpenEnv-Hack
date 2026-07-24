@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SQL Debugger Agent — Live Real-Time Environment</title>
+  <title>SQL Debugger Agent</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,17 +11,17 @@
   
   <style>
     :root {
-      --bg: #0b0f19;
+      --bg: #090d16;
       --card-bg: #111827;
-      --card-border: #1f2937;
-      --accent: #6366f1;
-      --accent-hover: #4f46e5;
+      --border: #1f2937;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
       --text: #f9fafb;
       --text-muted: #9ca3af;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-sans: 'Inter', -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
@@ -33,27 +33,27 @@
       font-family: var(--font-sans);
       line-height: 1.5;
       padding: 1.5rem;
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
-    /* Header */
+    /* Top Bar */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding-bottom: 1.25rem;
-      border-bottom: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--border);
       margin-bottom: 1.5rem;
     }
 
-    .brand h1 {
-      font-size: 1.25rem;
+    .brand-title {
+      font-size: 1.2rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
     }
 
-    .brand p {
+    .brand-sub {
       font-size: 0.8rem;
       color: var(--text-muted);
     }
@@ -64,90 +64,87 @@
       gap: 1rem;
     }
 
-    .status {
+    .status-indicator {
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--success);
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      padding: 0.3rem 0.7rem;
-      border-radius: 20px;
     }
 
     .dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--success);
-      box-shadow: 0 0 8px var(--success);
     }
 
-    .btn-link {
+    .link-btn {
       color: var(--text-muted);
       text-decoration: none;
-      font-size: 0.85rem;
-      border: 1px solid var(--card-border);
-      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.75rem;
       border-radius: 6px;
       transition: all 0.2s;
     }
 
-    .btn-link:hover {
+    .link-btn:hover {
       color: var(--text);
       border-color: #374151;
       background: #1f2937;
     }
 
-    /* Task Navigation Bar */
-    .task-nav {
+    /* Minimal Segmented Task Switcher */
+    .task-switcher {
       display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .task-tab {
-      flex: 1;
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
       border-radius: 8px;
+      padding: 3px;
+      margin-bottom: 1.5rem;
+      gap: 3px;
+    }
+
+    .task-segment {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.65rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
       cursor: pointer;
-      text-align: left;
-      transition: all 0.2s;
-    }
-
-    .task-tab:hover {
-      border-color: #374151;
-    }
-
-    .task-tab.active {
-      border-color: var(--accent);
-      background: #1e1b4b;
-    }
-
-    .task-tab-name {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: all 0.15s;
     }
 
-    .task-tab-diff {
-      font-size: 0.7rem;
-      padding: 0.15rem 0.5rem;
-      border-radius: 12px;
+    .task-segment:hover:not(.active) {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .task-segment.active {
+      background: #1f2937;
+      color: #fff;
       font-weight: 600;
-      text-transform: uppercase;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    .diff-easy { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-    .diff-medium { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-    .diff-hard { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-    .diff-real { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-tag {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .tag-easy { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .tag-medium { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .tag-hard { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .tag-real { background: rgba(79, 70, 229, 0.15); color: #818cf8; }
 
     /* Layout Grid */
     .grid {
@@ -156,91 +153,86 @@
       gap: 1.5rem;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 850px) {
       .grid { grid-template-columns: 1fr; }
     }
 
-    /* Cards & Panels */
     .card {
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 1.25rem;
-      margin-bottom: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.15rem;
+      margin-bottom: 1.15rem;
     }
 
-    .card-title {
-      font-size: 0.85rem;
+    .card-label {
+      font-size: 0.75rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       color: var(--text-muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .goal-desc {
-      font-size: 0.95rem;
-      color: #e5e7eb;
-      margin-bottom: 0.5rem;
-    }
-
-    .query-box {
-      background: #000;
-      border: 1px solid #374151;
-      padding: 0.6rem 0.8rem;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: #fca5a5;
-      margin-top: 0.5rem;
-    }
-
-    /* Database Table List */
-    .table-item {
-      border: 1px solid var(--card-border);
-      background: #0d1322;
-      border-radius: 8px;
-      padding: 0.75rem;
       margin-bottom: 0.6rem;
     }
 
-    .table-item-head {
+    .objective-text {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      line-height: 1.45;
+    }
+
+    .broken-code-box {
+      background: #030712;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+
+    /* Minimal Table Listing */
+    .table-row {
+      background: #0d1322;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .table-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.4rem;
-    }
-
-    .table-item-name {
       font-family: var(--font-mono);
+      font-size: 0.85rem;
       font-weight: 600;
-      font-size: 0.9rem;
       color: #38bdf8;
+      margin-bottom: 0.35rem;
     }
 
-    .cols-list {
+    .cols-wrapper {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.35rem;
+      gap: 0.3rem;
     }
 
-    .col-tag {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 0.15rem 0.45rem;
-      border-radius: 4px;
+    .col-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: #9ca3af;
+      font-size: 0.72rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
     }
 
-    /* SQL Editor & Buttons */
-    textarea {
+    /* Minimal SQL Console */
+    textarea.editor {
       width: 100%;
       height: 110px;
       background: #030712;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
       padding: 0.75rem;
       font-family: var(--font-mono);
       font-size: 0.85rem;
@@ -250,206 +242,200 @@
       margin-bottom: 0.75rem;
     }
 
-    textarea:focus {
+    textarea.editor:focus {
       border-color: var(--accent);
     }
 
-    .btn-group {
+    .action-row {
       display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.25rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
     }
 
-    .btn {
+    .btn-exec {
       background: var(--accent);
-      color: white;
+      color: #fff;
       border: none;
-      padding: 0.55rem 1rem;
+      padding: 0.5rem 1.1rem;
       border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.15s;
     }
 
-    .btn:hover { background: var(--accent-hover); }
-    
-    .btn-sec {
-      background: #1f2937;
-      color: var(--text);
-      border: 1px solid var(--card-border);
-    }
-    
-    .btn-sec:hover { background: #374151; }
+    .btn-exec:hover { background: var(--accent-hover); }
 
-    /* Progress & Score */
-    .score-card {
+    .action-links {
+      display: flex;
+      gap: 0.85rem;
+      font-size: 0.8rem;
+    }
+
+    .action-link {
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .action-link:hover { color: var(--text); }
+
+    /* Minimal Progress & Log */
+    .reward-box {
       background: #0d1322;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 0.85rem 1rem;
-      margin-bottom: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 0.85rem;
+      margin-bottom: 1rem;
     }
 
-    .score-row {
+    .reward-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
 
-    .score-val {
-      font-size: 1.25rem;
+    .score-display {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--success);
-      font-family: var(--font-mono);
     }
 
     .progress-bar {
       width: 100%;
-      height: 8px;
+      height: 6px;
       background: #1f2937;
-      border-radius: 4px;
+      border-radius: 3px;
       overflow: hidden;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.35rem;
     }
 
     .progress-fill {
       height: 100%;
       width: 5%;
       background: var(--success);
-      transition: width 0.3s ease;
+      transition: width 0.25s ease;
     }
 
-    .score-reason {
-      font-size: 0.8rem;
+    .reward-desc {
+      font-size: 0.78rem;
       color: var(--text-muted);
     }
 
-    /* Minimal Log Box */
     .log-box {
       background: #030712;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 0.75rem;
       font-family: var(--font-mono);
-      font-size: 0.8rem;
-      height: 180px;
+      font-size: 0.78rem;
+      height: 150px;
       overflow-y: auto;
     }
 
-    .log-line {
-      margin-bottom: 0.4rem;
-      color: #d1d5db;
+    .log-item {
+      margin-bottom: 0.35rem;
+      color: #cbd5e1;
       white-space: pre-wrap;
       border-bottom: 1px solid rgba(255,255,255,0.03);
-      padding-bottom: 0.3rem;
+      padding-bottom: 0.25rem;
     }
 
     .log-time { color: var(--text-muted); }
-    .log-action { color: #818cf8; font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <!-- Minimal Header -->
+  <!-- Header -->
   <header>
-    <div class="brand">
-      <h1>SQL Debugger Agent</h1>
-      <p>Real-Time OpenEnv Environment & Database Inspector</p>
+    <div>
+      <div class="brand-title">SQL Debugger Agent</div>
+      <div class="brand-sub">OpenEnv Benchmark & Database Simulator</div>
     </div>
     <div class="header-right">
-      <div class="status"><div class="dot"></div> Real-Time Sync Active</div>
-      <a href="/docs" target="_blank" class="btn-link">API Specs (/docs)</a>
+      <div class="status-indicator"><div class="dot"></div> Online</div>
+      <a href="/docs" target="_blank" class="link-btn">API Specs (/docs)</a>
     </div>
   </header>
 
-  <!-- Task Navigation Tabs -->
-  <div class="task-nav">
-    <div class="task-tab active" id="tab-task-0" onclick="selectTask('task-0')">
-      <div class="task-tab-name">
-        <span>Task 1: Syntax Debugger</span>
-        <span class="task-tab-diff diff-easy">Easy</span>
-      </div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Max steps: 6</div>
-    </div>
-    <div class="task-tab" id="tab-task-1" onclick="selectTask('task-1')">
-      <div class="task-tab-name">
-        <span>Task 2: Performance Tuner</span>
-        <span class="task-tab-diff diff-medium">Medium</span>
-      </div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Max steps: 8</div>
-    </div>
-    <div class="task-tab" id="tab-task-2" onclick="selectTask('task-2')">
-      <div class="task-tab-name">
-        <span>Task 3: Schema Architect</span>
-        <span class="task-tab-diff diff-hard">Hard</span>
-      </div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Max steps: 15</div>
-    </div>
-    <div class="task-tab" id="tab-custom-db" onclick="connectRealDb()" style="border-color: #10b981;">
-      <div class="task-tab-name">
-        <span>⚡ Real Database Mode</span>
-        <span class="task-tab-diff diff-real">Disk .db</span>
-      </div>
-      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">Live persistent file</div>
-    </div>
+  <!-- Segmented Task Switcher -->
+  <div class="task-switcher">
+    <button class="task-segment active" id="tab-task-0" onclick="switchTask('task-0')">
+      <span>1. Syntax Debugger</span>
+      <span class="badge-tag tag-easy">Easy</span>
+    </button>
+    <button class="task-segment" id="tab-task-1" onclick="switchTask('task-1')">
+      <span>2. Performance Tuner</span>
+      <span class="badge-tag tag-medium">Medium</span>
+    </button>
+    <button class="task-segment" id="tab-task-2" onclick="switchTask('task-2')">
+      <span>3. Schema Architect</span>
+      <span class="badge-tag tag-hard">Hard</span>
+    </button>
+    <button class="task-segment" id="tab-custom-db" onclick="connectRealDb()">
+      <span>4. Real Database Mode</span>
+      <span class="badge-tag tag-real">Disk .db</span>
+    </button>
   </div>
 
-  <!-- Main Grid -->
+  <!-- Grid -->
   <div class="grid">
 
-    <!-- Left Column: Inspector -->
+    <!-- Left Column -->
     <div>
       <div class="card">
-        <div class="card-title">Task / Environment Target</div>
-        <div class="goal-desc" id="taskDesc">Loading details...</div>
+        <div class="card-label">Task Objective</div>
+        <div class="objective-text" id="taskDesc">Loading details...</div>
         <div id="brokenBox" style="display: none;">
-          <div style="font-size: 0.75rem; color: var(--danger); margin-top: 0.4rem;">Broken Query:</div>
-          <div class="query-box" id="brokenSql"></div>
+          <div style="font-size: 0.72rem; color: var(--danger); margin-top: 0.4rem; font-weight: 600;">BROKEN QUERY:</div>
+          <div class="broken-code-box" id="brokenSql"></div>
         </div>
       </div>
 
       <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-          <div class="card-title" style="margin-bottom: 0;">Active Tables & Real-Time Metadata</div>
-          <button class="btn-link" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" onclick="refreshState()">Sync Now</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <div class="card-label" style="margin-bottom: 0;">Database Tables</div>
+          <span class="action-link" style="font-size: 0.75rem;" onclick="refreshState()">Sync</span>
         </div>
         <div id="tableList">
-          <div style="font-size: 0.85rem; color: var(--text-muted);">Loading tables...</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted);">Loading tables...</div>
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Control & Console -->
+    <!-- Right Column -->
     <div>
       <div class="card">
-        <div class="card-title" style="display: flex; justify-content: space-between;">
+        <div class="card-label" style="display: flex; justify-content: space-between;">
           <span>SQL Editor</span>
-          <span style="color: var(--accent); cursor: pointer; text-transform: none;" onclick="loadPreset()">Auto-Fill Solution</span>
-        </div>
-        
-        <textarea id="sqlInput" placeholder="Enter SQL statement..."></textarea>
-
-        <div class="btn-group">
-          <button class="btn" onclick="runSql()">Execute SQL</button>
-          <button class="btn btn-sec" onclick="autoSolve()">Auto-Solve Task</button>
-          <button class="btn btn-sec" onclick="resetTask()">Reset Task</button>
+          <span class="action-link" onclick="loadPreset()">Auto-Fill Solution</span>
         </div>
 
-        <div class="score-card">
-          <div class="score-row">
-            <span style="font-size: 0.85rem; color: var(--text-muted);">Environment Reward Score</span>
-            <span class="score-val" id="scoreVal">0.05</span>
+        <textarea class="editor" id="sqlInput" placeholder="Enter SQL statement..."></textarea>
+
+        <div class="action-row">
+          <button class="btn-exec" onclick="runSql()">Execute SQL</button>
+          <div class="action-links">
+            <span class="action-link" onclick="autoSolve()">Auto-Solve</span>
+            <span class="action-link" onclick="resetTask()">Reset</span>
+          </div>
+        </div>
+
+        <div class="reward-box">
+          <div class="reward-top">
+            <span style="font-size: 0.78rem; color: var(--text-muted);">Reward Score</span>
+            <span class="score-display" id="scoreVal">0.05</span>
           </div>
           <div class="progress-bar">
             <div class="progress-fill" id="progressFill"></div>
           </div>
-          <div class="score-reason" id="scoreReason">Task initialized.</div>
+          <div class="reward-desc" id="scoreReason">Task initialized.</div>
         </div>
 
-        <div class="card-title">Real-Time Execution Log</div>
+        <div class="card-label">Activity Log</div>
         <div class="log-box" id="logBox"></div>
       </div>
     </div>
@@ -468,42 +454,40 @@
 
     async function init() {
       await resetTask();
-      // Start background real-time sync every 2.5 seconds
       if (!syncInterval) {
         syncInterval = setInterval(refreshState, 2500);
       }
     }
 
-    async function selectTask(taskId) {
+    async function switchTask(taskId) {
       currentTask = taskId;
-      updateActiveTab(`tab-${taskId}`);
+      setActiveSegment(`tab-${taskId}`);
       await resetTask();
     }
 
-    function updateActiveTab(tabId) {
-      document.querySelectorAll('.task-tab').forEach(t => t.classList.remove('active'));
-      const active = document.getElementById(tabId);
-      if (active) active.classList.add('active');
+    function setActiveSegment(tabId) {
+      document.querySelectorAll('.task-segment').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById(tabId);
+      if (el) el.classList.add('active');
     }
 
     async function connectRealDb() {
       currentTask = 'custom-db';
-      updateActiveTab('tab-custom-db');
-
-      const customPath = prompt("Enter real SQLite database file path:", "real_production.db") || "real_production.db";
+      setActiveSegment('tab-custom-db');
+      const path = prompt("Enter SQLite database file path:", "real_production.db") || "real_production.db";
 
       const res = await fetch('/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ db_path: customPath })
+        body: JSON.stringify({ db_path: path })
       });
       const obs = await res.json();
 
       document.getElementById('taskDesc').innerText = obs.task_description;
       document.getElementById('brokenBox').style.display = 'none';
       renderTables(obs.schema_metadata || []);
-      updateScore(0.95, `Connected to real disk database file (${customPath}).`);
-      addLog("CONNECT", `Connected to real database file: ${customPath}`);
+      updateScore(0.95, `Connected to live database (${path}).`);
+      addLog(`Connected to disk database file: ${path}`);
     }
 
     async function resetTask() {
@@ -515,9 +499,9 @@
         body: JSON.stringify({ task_id: currentTask })
       });
       const obs = await res.json();
-      
+
       document.getElementById('taskDesc').innerText = obs.task_description;
-      
+
       const bBox = document.getElementById('brokenBox');
       if (obs.broken_query) {
         bBox.style.display = 'block';
@@ -529,23 +513,23 @@
       renderTables(obs.schema_metadata || []);
       updateScore(0.05, "Environment reset.");
       loadPreset();
-      addLog("RESET", `Task ${currentTask} initialized.`);
+      addLog(`Task ${currentTask} initialized.`);
     }
 
     function renderTables(tables) {
       const container = document.getElementById('tableList');
       if (!tables || !tables.length) {
-        container.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-muted);">No active tables.</div>';
+        container.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-muted);">No active tables.</div>';
         return;
       }
       container.innerHTML = tables.map(tbl => `
-        <div class="table-item">
-          <div class="table-item-head">
-            <span class="table-item-name">${tbl.table_name}</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">${tbl.row_count} rows</span>
+        <div class="table-row">
+          <div class="table-header">
+            <span>${tbl.table_name}</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">${tbl.row_count} rows</span>
           </div>
-          <div class="cols-list">
-            ${tbl.columns.map(c => `<span class="col-tag">${c}</span>`).join('')}
+          <div class="cols-wrapper">
+            ${tbl.columns.map(c => `<span class="col-pill">${c}</span>`).join('')}
           </div>
         </div>
       `).join('');
@@ -570,7 +554,7 @@
       if (data.observation.schema_metadata) {
         renderTables(data.observation.schema_metadata);
       }
-      addLog("SQL", data.observation.last_action_result || 'Executed.');
+      addLog(data.observation.last_action_result || 'Action completed.');
     }
 
     function updateScore(val, reason) {
@@ -580,13 +564,13 @@
       document.getElementById('scoreReason').innerText = reason || '';
     }
 
-    function addLog(action, text) {
+    function addLog(text) {
       const box = document.getElementById('logBox');
       const time = new Date().toLocaleTimeString();
-      const line = document.createElement('div');
-      line.className = 'log-line';
-      line.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-action">${action}:</span> ${text}`;
-      box.prepend(line);
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      div.innerText = `[${time}] ${text}`;
+      box.prepend(div);
     }
 
     async function refreshState() {
@@ -596,9 +580,7 @@
         if (obs.schema_metadata) {
           renderTables(obs.schema_metadata);
         }
-      } catch (err) {
-        // Quiet background sync
-      }
+      } catch (e) {}
     }
 
     async function autoSolve() {
@@ -621,7 +603,7 @@
 
       for (let sql of sqls) {
         document.getElementById('sqlInput').value = sql;
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 500));
         await runSql();
       }
     }
